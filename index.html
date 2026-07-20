@@ -148,6 +148,8 @@
     <script src="bank_control.js"></script>
     <script src="bank_electronics.js"></script>
     <script src="bank_csmaths.js"></script>
+    <script src="bank_robotics.js"></script>
+    <script src="bank_rtl.js"></script>
     <script>
         // ---------- state ----------
         const KEY = "rdprep-v1";
@@ -216,7 +218,9 @@
             structures: "structures", complexity: "structures", "memory-cache": "structures",
             fsm: "structures", "concurrency-concepts": "threads",
             "linear-algebra": "leastsq", optimisation: "leastsq", "floating-point": "leastsq",
-            "probability-stats": "leastsq"
+            "probability-stats": "leastsq",
+            estimation: "kalman", "slam-nav": "kalman", locomotion: "pid",
+            actuators: "embedded", architecture: "embedded"
         };
 
         function recordResult(item, correct) {
@@ -427,7 +431,7 @@
                 tp.appendChild(b);
             });
             const lp = document.getElementById("lenPills");
-            [10, 25, 50].forEach(n => {
+            [10, 25, 50, 100].forEach(n => {
                 const b = document.createElement("button");
                 b.className = "pill" + (testSel.len === n ? " sel" : "");
                 b.textContent = n + " questions";
