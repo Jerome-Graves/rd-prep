@@ -54,8 +54,9 @@
         nav.side a.lesson:hover { background: var(--bg-alt); }
         nav.side a.lesson.active { background: var(--bg-alt); font-weight: 600; }
         nav.side a.lesson .tick { color: var(--good); }
-        nav.side a.home { display:block; padding: 6px 8px; border-radius: 7px; color: var(--text);
+        nav.side a.top { display:block; padding: 6px 8px; border-radius: 7px; color: var(--text);
             text-decoration: none; font-weight: 600; font-size: 14px; }
+        nav.side a.top.active { background: var(--bg-alt); }
         main { flex: 1; padding: 28px 30px 70px; min-width: 0; }
         h1 { font-size: 26px; letter-spacing: -0.3px; margin-bottom: 6px; }
         h2 { font-size: 20px; margin: 26px 0 10px; }
@@ -85,7 +86,8 @@
         .why.show { display: block; }
         .reveal-btn, .btn {
             border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 8px;
-            padding: 8px 16px; cursor: pointer; font: inherit; font-size: 14.5px;
+            padding: 8px 16px; cursor: pointer; font: inherit; font-size: 14.5px; text-decoration: none;
+            display: inline-block;
         }
         .reveal-btn:hover, .btn:hover { border-color: var(--accent); color: var(--accent); }
         .btn.primary { border-color: var(--accent); color: var(--accent); font-weight: 600; }
@@ -102,6 +104,19 @@
         .tracks .t .n { color: var(--muted); font-size: 13px; }
         .muted { color: var(--muted); }
         .scorechip { font-size: 12.5px; color: var(--muted); }
+        .pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+        .pill { border: 1px solid var(--line); border-radius: 20px; padding: 6px 14px; cursor: pointer;
+            background: var(--bg); color: var(--text); font: inherit; font-size: 14px; }
+        .pill.sel { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+        table.stats { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0; }
+        table.stats th, table.stats td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+        table.stats th { color: var(--muted); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em; }
+        .acc { display: inline-block; min-width: 46px; }
+        .minibar { display: inline-block; width: 90px; height: 7px; background: var(--bg-alt);
+            border: 1px solid var(--line); border-radius: 5px; overflow: hidden; vertical-align: middle; margin-left: 8px; }
+        .minibar > div { height: 100%; }
+        .good-bg { background: var(--good); } .bad-bg { background: var(--bad); }
+        .testhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
         @media (max-width: 760px) {
             .layout { flex-direction: column; }
             nav.side { width: 100%; min-height: 0; border-right: none; border-bottom: 1px solid var(--line);
@@ -126,6 +141,13 @@
     </div>
 
     <script src="data.js"></script>
+    <script>const BANKS = {};</script>
+    <script src="bank_cpp.js"></script>
+    <script src="bank_dsp.js"></script>
+    <script src="bank_acoustics.js"></script>
+    <script src="bank_control.js"></script>
+    <script src="bank_electronics.js"></script>
+    <script src="bank_csmaths.js"></script>
     <script>
         // ---------- state ----------
         const KEY = "rdprep-v1";
@@ -133,9 +155,9 @@
             try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
         }
         function saveState(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { } }
-        const state = Object.assign({ done: {}, quiz: {}, visits: [] }, loadState());
+        const state = Object.assign({ done: {}, quiz: {}, visits: [], results: {} }, loadState());
+        if (!state.results) state.results = {};
 
-        // record today's visit for the streak
         const today = new Date().toISOString().slice(0, 10);
         if (!state.visits.includes(today)) { state.visits.push(today); saveState(state); }
         function streakCount() {
@@ -162,6 +184,63 @@
             });
         })();
 
+        // ---------- bank plumbing ----------
+        function qhash(s) {
+            let h = 5381;
+            for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+            return h.toString(36);
+        }
+        const BANK_ALL = [];   // {track, t, d, q, o, a, why, id}
+        Object.keys(BANKS).forEach(track => {
+            (BANKS[track] || []).forEach(item => {
+                BANK_ALL.push(Object.assign({ track: track, id: track.slice(0, 2) + "-" + qhash(item.q) }, item));
+            });
+        });
+        const bankTracks = Object.keys(BANKS).filter(t => (BANKS[t] || []).length);
+
+        // Map bank topic tags to lesson ids for "go study this" links.
+        const TOPIC_LESSON = {
+            raii: "raii", move: "move", stl: "stl", concurrency: "threads", "embedded-cpp": "threads",
+            memory: "stl", idioms: "move", classes: "raii", templates: "stl", const: "raii",
+            sampling: "sampling", quantisation: "sampling", fft: "fft", spectral: "fft",
+            filters: "filters", convolution: "fft", decimation: "sampling", "db-snr": "impedance",
+            timing: "fft", practical: "filters",
+            impedance: "impedance", attenuation: "impedance", transducers: "frontend",
+            beams: "arrays", arrays: "arrays", levitation: "arrays", waves: "impedance",
+            measurement: "impedance", doppler: "sampling", practice: "pid",
+            pid: "pid", stability: "pid", discrete: "pid", statespace: "kalman",
+            kalman: "kalman", estimation: "kalman", motion: "pid", robustness: "pid",
+            opamps: "frontend", "passives-filters": "frontend", "adc-dac": "frontend",
+            "noise-grounding": "frontend", power: "frontend", sensors: "frontend",
+            buses: "embedded", "interrupts-dma": "embedded", rtos: "embedded", "debug-pcb": "embedded",
+            structures: "structures", complexity: "structures", "memory-cache": "structures",
+            fsm: "structures", "concurrency-concepts": "threads",
+            "linear-algebra": "leastsq", optimisation: "leastsq", "floating-point": "leastsq",
+            "probability-stats": "leastsq"
+        };
+
+        function recordResult(item, correct) {
+            const r = state.results[item.id] || { r: 0, w: 0, t: item.t, track: item.track };
+            if (correct) r.r++; else r.w++;
+            r.last = Date.now();
+            r.t = item.t; r.track = item.track;
+            state.results[item.id] = r;
+            saveState(state);
+        }
+        function topicStats() {
+            // aggregate results by track/topic
+            const agg = {};
+            Object.keys(state.results).forEach(id => {
+                const r = state.results[id];
+                const key = r.track + "|" + r.t;
+                if (!agg[key]) agg[key] = { track: r.track, t: r.t, right: 0, wrong: 0 };
+                agg[key].right += r.r; agg[key].wrong += r.w;
+            });
+            return Object.values(agg).map(x => Object.assign(x, {
+                n: x.right + x.wrong, acc: x.right / Math.max(1, x.right + x.wrong)
+            }));
+        }
+
         // ---------- helpers ----------
         const tracks = [];
         LESSONS.forEach(l => { if (!tracks.includes(l.track)) tracks.push(l.track); });
@@ -181,10 +260,13 @@
             const start = new Date("2026-01-01");
             return Math.floor((new Date() - start) / 86400000);
         }
+        function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
-        // ---------- rendering ----------
-        function renderNav(activeId) {
-            let h = '<a class="home" href="#home">Dashboard</a>';
+        // ---------- nav ----------
+        function renderNav(activeId, activeTop) {
+            let h = '<a class="top' + (activeTop === "home" ? " active" : "") + '" href="#home">Dashboard</a>'
+                + '<a class="top' + (activeTop === "test" ? " active" : "") + '" href="#test">Practice test</a>'
+                + '<a class="top' + (activeTop === "results" ? " active" : "") + '" href="#results">My results</a>';
             tracks.forEach(t => {
                 h += '<div class="track">' + t + '</div>';
                 LESSONS.filter(l => l.track === t).forEach(l => {
@@ -198,27 +280,39 @@
             document.getElementById("streak").innerHTML = "streak: <b>" + streakCount() + "</b> day" + (streakCount() === 1 ? "" : "s");
         }
 
+        // ---------- home ----------
         function renderHome() {
-            renderNav(null);
+            renderNav(null, "home");
             const o = pct(null);
             const qs = allQuestions();
             const qod = qs[dayIndex() % qs.length];
             const next = LESSONS.find(l => !state.done[l.id]);
+            const stats = topicStats().filter(s => s.n >= 3).sort((a, b) => a.acc - b.acc);
             let h = '<h1>Dashboard</h1>'
-                + '<p class="muted">' + o.done + ' of ' + o.total + ' lessons complete.</p>'
+                + '<p class="muted">' + o.done + ' of ' + o.total + ' lessons complete &middot; '
+                + BANK_ALL.length + ' bank questions available.</p>'
                 + '<div class="progressbar"><div style="width:' + o.pct + '%"></div></div>'
                 + '<div class="tracks">';
             tracks.forEach(t => {
                 const p = pct(t);
                 h += '<div class="t"><div class="name">' + t + '</div>'
                     + '<div class="progressbar"><div style="width:' + p.pct + '%"></div></div>'
-                    + '<div class="n">' + p.done + ' / ' + p.total + '</div></div>';
+                    + '<div class="n">' + p.done + ' / ' + p.total + ' lessons</div></div>';
             });
-            h += '</div>';
-            if (next) {
-                h += '<p><a class="btn primary" href="#lesson/' + next.id + '">Continue: ' + next.title + '</a></p>';
-            } else {
-                h += '<p><b>All lessons complete.</b> Re-run quizzes cold, or ask Claude for mock interviews.</p>';
+            h += '</div>'
+                + '<p><a class="btn primary" href="#test">Take a practice test</a> '
+                + (next ? '<a class="btn" href="#lesson/' + next.id + '">Continue: ' + next.title + '</a>' : '')
+                + '</p>';
+            if (stats.length) {
+                h += '<h2>Your weakest topics right now</h2><table class="stats"><tr><th>Topic</th><th>Track</th><th>Accuracy</th><th></th></tr>';
+                stats.slice(0, 5).forEach(s => {
+                    const lid = TOPIC_LESSON[s.t];
+                    h += '<tr><td>' + s.t + '</td><td class="muted">' + s.track + '</td>'
+                        + '<td><span class="acc">' + Math.round(100 * s.acc) + '%</span>'
+                        + '<span class="minibar"><div class="' + (s.acc >= 0.7 ? "good-bg" : "bad-bg") + '" style="width:' + Math.round(100 * s.acc) + '%"></div></span></td>'
+                        + '<td>' + (lid ? '<a href="#lesson/' + lid + '">review lesson</a>' : '') + '</td></tr>';
+                });
+                h += '</table>';
             }
             h += '<h2>Interview question of the day</h2>'
                 + '<div class="card"><div class="qq">' + qod.q + '</div>'
@@ -226,18 +320,14 @@
                 + '<button class="reveal-btn" onclick="this.nextElementSibling.classList.add(\'show\'); this.style.display=\'none\'">Reveal model answer</button>'
                 + '<div class="model"><p>' + qod.a + '</p><p class="muted" style="font-size:12.5px">from: ' + qod.from + '</p></div>'
                 + '</div>';
-            h += '<h2>How to use this site</h2>'
-                + '<ul class="body"><li>One lesson per day, in order or by appetite. Read, then take the quiz cold.</li>'
-                + '<li>Answer the interview question at the end of each lesson out loud before revealing.</li>'
-                + '<li>The question of the day rotates through every question on the site. That is your daily rep.</li>'
-                + '<li>Progress and streak are stored in this browser only.</li></ul>';
             document.getElementById("main").innerHTML = h;
         }
 
+        // ---------- lessons ----------
         function renderLesson(id) {
             const l = byId[id];
             if (!l) { location.hash = "#home"; return; }
-            renderNav(id);
+            renderNav(id, null);
             const idx = LESSONS.indexOf(l);
             const prev = LESSONS[idx - 1], next = LESSONS[idx + 1];
             const best = state.quiz[id];
@@ -259,7 +349,7 @@
                 + (next ? '<a class="btn" href="#lesson/' + next.id + '">' + next.title + ' &rarr;</a>' : '<span></span>')
                 + '</div>';
             document.getElementById("main").innerHTML = h;
-            renderQuiz(l);
+            renderLessonQuiz(l);
             document.getElementById("completeBtn").addEventListener("click", function () {
                 state.done[id] = !state.done[id];
                 saveState(state);
@@ -268,7 +358,7 @@
             window.scrollTo(0, 0);
         }
 
-        function renderQuiz(l) {
+        function renderLessonQuiz(l) {
             const holder = document.getElementById("quiz");
             let score = 0, answered = 0;
             l.quiz.forEach((item, qi) => {
@@ -310,10 +400,178 @@
             });
         }
 
+        // ---------- practice test ----------
+        let testSel = { track: "All", len: 25 };
+        let test = null;   // {items, i, right, perTopic}
+
+        function renderTestSetup() {
+            renderNav(null, "test");
+            test = null;
+            if (!BANK_ALL.length) {
+                document.getElementById("main").innerHTML = '<h1>Practice test</h1><p class="muted">Question banks not loaded.</p>';
+                return;
+            }
+            let h = '<h1>Practice test</h1>'
+                + '<p class="muted">Questions are chosen to favour ones you have not seen or got wrong. Results are saved so the dashboard can show what to study.</p>'
+                + '<h3>Section</h3><div class="pills" id="trackPills"></div>'
+                + '<h3>Length</h3><div class="pills" id="lenPills"></div>'
+                + '<p style="margin-top:18px"><button class="btn primary" id="startBtn">Start test</button></p>';
+            document.getElementById("main").innerHTML = h;
+            const tp = document.getElementById("trackPills");
+            ["All"].concat(bankTracks).forEach(t => {
+                const b = document.createElement("button");
+                b.className = "pill" + (testSel.track === t ? " sel" : "");
+                const count = t === "All" ? BANK_ALL.length : (BANKS[t] || []).length;
+                b.textContent = t + " (" + count + ")";
+                b.addEventListener("click", () => { testSel.track = t; renderTestSetup(); });
+                tp.appendChild(b);
+            });
+            const lp = document.getElementById("lenPills");
+            [10, 25, 50].forEach(n => {
+                const b = document.createElement("button");
+                b.className = "pill" + (testSel.len === n ? " sel" : "");
+                b.textContent = n + " questions";
+                b.addEventListener("click", () => { testSel.len = n; renderTestSetup(); });
+                lp.appendChild(b);
+            });
+            document.getElementById("startBtn").addEventListener("click", startTest);
+        }
+
+        function startTest() {
+            let pool = testSel.track === "All" ? BANK_ALL.slice() : BANK_ALL.filter(x => x.track === testSel.track);
+            // weight: unseen first, then most-wrong, with randomness
+            pool.forEach(x => {
+                const r = state.results[x.id];
+                x._w = (r ? (r.r - r.w) : -0.5) + Math.random() * 0.9;
+            });
+            pool.sort((a, b) => a._w - b._w);
+            const items = pool.slice(0, Math.min(testSel.len, pool.length));
+            // shuffle presentation order
+            for (let i = items.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [items[i], items[j]] = [items[j], items[i]];
+            }
+            test = { items, i: 0, right: 0, perTopic: {} };
+            renderTestQ();
+        }
+
+        function renderTestQ() {
+            renderNav(null, "test");
+            const item = test.items[test.i];
+            let h = '<div class="testhead"><h1>Question ' + (test.i + 1) + ' / ' + test.items.length + '</h1>'
+                + '<span class="muted">' + item.track + ' &middot; ' + item.t + '</span></div>'
+                + '<div class="progressbar"><div style="width:' + Math.round(100 * test.i / test.items.length) + '%"></div></div>'
+                + '<div class="card"><div class="qq">' + item.q + '</div><div id="opts"></div>'
+                + '<div class="why" id="why">' + item.why + '</div></div>'
+                + '<div class="navrow"><button class="btn" id="quitBtn">End test</button>'
+                + '<button class="btn primary" id="nextBtn" style="display:none">Next &rarr;</button></div>';
+            document.getElementById("main").innerHTML = h;
+            const optsDiv = document.getElementById("opts");
+            item.o.forEach((optText, oi) => {
+                const b = document.createElement("button");
+                b.className = "opt"; b.innerHTML = optText;
+                b.addEventListener("click", function () {
+                    const all = optsDiv.querySelectorAll(".opt");
+                    all.forEach((x, xi) => { x.disabled = true; if (xi === item.a) x.classList.add("correct"); });
+                    const ok = oi === item.a;
+                    if (!ok) b.classList.add("wrong"); else test.right++;
+                    const pt = test.perTopic[item.t] || { right: 0, n: 0, track: item.track };
+                    pt.n++; if (ok) pt.right++;
+                    test.perTopic[item.t] = pt;
+                    recordResult(item, ok);
+                    document.getElementById("why").classList.add("show");
+                    document.getElementById("nextBtn").style.display = "";
+                });
+                optsDiv.appendChild(b);
+            });
+            document.getElementById("nextBtn").addEventListener("click", function () {
+                test.i++;
+                if (test.i >= test.items.length) renderTestDone(); else renderTestQ();
+            });
+            document.getElementById("quitBtn").addEventListener("click", function () {
+                if (test.i > 0 || document.getElementById("why").classList.contains("show")) renderTestDone();
+                else { location.hash = "#test"; renderTestSetup(); }
+            });
+            window.scrollTo(0, 0);
+        }
+
+        function renderTestDone() {
+            renderNav(null, "test");
+            const answered = Object.values(test.perTopic).reduce((s, x) => s + x.n, 0);
+            const pctScore = answered ? Math.round(100 * test.right / answered) : 0;
+            let h = '<h1>Test complete</h1>'
+                + '<p><b>' + test.right + ' / ' + answered + ' (' + pctScore + '%)</b></p>'
+                + '<h2>This test by topic</h2><table class="stats"><tr><th>Topic</th><th>Track</th><th>Score</th><th></th></tr>';
+            Object.keys(test.perTopic).map(t => Object.assign({ t }, test.perTopic[t]))
+                .sort((a, b) => (a.right / a.n) - (b.right / b.n))
+                .forEach(s => {
+                    const lid = TOPIC_LESSON[s.t];
+                    h += '<tr><td>' + s.t + '</td><td class="muted">' + s.track + '</td>'
+                        + '<td>' + s.right + '/' + s.n + '</td>'
+                        + '<td>' + (lid ? '<a href="#lesson/' + lid + '">review lesson</a>' : '') + '</td></tr>';
+                });
+            h += '</table>'
+                + '<p style="margin-top:16px"><a class="btn primary" href="#test" onclick="test=null">Another test</a> '
+                + '<a class="btn" href="#results">See all my results</a></p>';
+            document.getElementById("main").innerHTML = h;
+            test = null;
+        }
+
+        // ---------- results ----------
+        function renderResults() {
+            renderNav(null, "results");
+            const stats = topicStats();
+            const totalR = stats.reduce((s, x) => s + x.right, 0);
+            const totalW = stats.reduce((s, x) => s + x.wrong, 0);
+            let h = '<h1>My results</h1>';
+            if (!stats.length) {
+                h += '<p class="muted">No test answers recorded yet. <a href="#test">Take a practice test</a> and your accuracy by topic will appear here.</p>';
+                document.getElementById("main").innerHTML = h;
+                return;
+            }
+            h += '<p><b>' + totalR + '</b> right, <b>' + totalW + '</b> wrong overall ('
+                + Math.round(100 * totalR / Math.max(1, totalR + totalW)) + '%). '
+                + Object.keys(state.results).length + ' distinct questions attempted of ' + BANK_ALL.length + '.</p>';
+
+            // per track
+            h += '<h2>By section</h2><table class="stats"><tr><th>Section</th><th>Attempted</th><th>Accuracy</th></tr>';
+            bankTracks.forEach(tr => {
+                const s = stats.filter(x => x.track === tr);
+                const r = s.reduce((a, x) => a + x.right, 0), w = s.reduce((a, x) => a + x.wrong, 0);
+                const seen = Object.values(state.results).filter(x => x.track === tr).length;
+                const acc = r + w ? Math.round(100 * r / (r + w)) : 0;
+                h += '<tr><td>' + tr + '</td><td class="muted">' + seen + ' / ' + (BANKS[tr] || []).length + ' questions</td>'
+                    + '<td><span class="acc">' + (r + w ? acc + '%' : '-') + '</span>'
+                    + '<span class="minibar"><div class="' + (acc >= 70 ? "good-bg" : "bad-bg") + '" style="width:' + acc + '%"></div></span></td></tr>';
+            });
+            h += '</table>';
+
+            // per topic, weakest first
+            h += '<h2>By topic (weakest first)</h2><table class="stats"><tr><th>Topic</th><th>Track</th><th>Answered</th><th>Accuracy</th><th></th></tr>';
+            stats.sort((a, b) => a.acc - b.acc).forEach(s => {
+                const lid = TOPIC_LESSON[s.t];
+                const acc = Math.round(100 * s.acc);
+                h += '<tr><td>' + s.t + '</td><td class="muted">' + s.track + '</td><td>' + s.n + '</td>'
+                    + '<td><span class="acc">' + acc + '%</span>'
+                    + '<span class="minibar"><div class="' + (acc >= 70 ? "good-bg" : "bad-bg") + '" style="width:' + acc + '%"></div></span></td>'
+                    + '<td>' + (lid ? '<a href="#lesson/' + lid + '">review lesson</a>' : '') + '</td></tr>';
+            });
+            h += '</table>'
+                + '<p style="margin-top:20px"><button class="btn" id="resetBtn">Reset all test results</button></p>';
+            document.getElementById("main").innerHTML = h;
+            document.getElementById("resetBtn").addEventListener("click", function () {
+                if (confirm("Delete all saved test results? Lesson completion is kept.")) {
+                    state.results = {}; saveState(state); renderResults();
+                }
+            });
+        }
+
         // ---------- router ----------
         function route() {
             const h = location.hash || "#home";
             if (h.startsWith("#lesson/")) renderLesson(h.slice(8));
+            else if (h === "#test") { if (test && test.items && test.i < test.items.length) renderTestQ(); else renderTestSetup(); }
+            else if (h === "#results") renderResults();
             else renderHome();
         }
         window.addEventListener("hashchange", route);
