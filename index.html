@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>R&D Prep</title>
+    <meta name="description" content="Interactive refresher for R&D instrumentation interviews: C++, DSP, acoustics, control, electronics, embedded and numerical maths.">
+    <style>
+        :root {
+            --bg: #ffffff; --bg-alt: #f6f7f9; --text: #1c2127; --muted: #5b6672;
+            --accent: #1d7a4f; --line: #e4e7eb; --good: #1d7a4f; --bad: #b3383e;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #14171b; --bg-alt: #1b1f25; --text: #e8eaed; --muted: #9aa4af;
+                --accent: #4ecb8d; --line: #2a2f36; --good: #4ecb8d; --bad: #f2716f;
+            }
+        }
+        :root[data-theme="dark"] {
+            --bg: #14171b; --bg-alt: #1b1f25; --text: #e8eaed; --muted: #9aa4af;
+            --accent: #4ecb8d; --line: #2a2f36; --good: #4ecb8d; --bad: #f2716f;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.65; font-size: 16px;
+        }
+        a { color: var(--accent); }
+        header {
+            position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line);
+            background: var(--bg); padding: 12px 20px; display: flex; align-items: center; gap: 14px;
+        }
+        header .brand { font-weight: 700; font-size: 17px; color: var(--text); text-decoration: none; }
+        header .spacer { flex: 1; }
+        .streak { font-size: 13px; color: var(--muted); }
+        .streak b { color: var(--accent); }
+        #theme-toggle {
+            background: none; border: 1px solid var(--line); border-radius: 7px; color: var(--muted);
+            cursor: pointer; font: inherit; font-size: 13px; padding: 4px 9px;
+        }
+        #theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+        .layout { display: flex; max-width: 1100px; margin: 0 auto; }
+        nav.side {
+            width: 250px; flex-shrink: 0; padding: 22px 14px; border-right: 1px solid var(--line);
+            min-height: calc(100vh - 54px);
+        }
+        nav.side .track { font-size: 12px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .07em; color: var(--accent); margin: 16px 6px 4px; }
+        nav.side a.lesson {
+            display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px; border-radius: 7px;
+            color: var(--text); text-decoration: none; font-size: 14px;
+        }
+        nav.side a.lesson:hover { background: var(--bg-alt); }
+        nav.side a.lesson.active { background: var(--bg-alt); font-weight: 600; }
+        nav.side a.lesson .tick { color: var(--good); }
+        nav.side a.home { display:block; padding: 6px 8px; border-radius: 7px; color: var(--text);
+            text-decoration: none; font-weight: 600; font-size: 14px; }
+        main { flex: 1; padding: 28px 30px 70px; min-width: 0; }
+        h1 { font-size: 26px; letter-spacing: -0.3px; margin-bottom: 6px; }
+        h2 { font-size: 20px; margin: 26px 0 10px; }
+        h3 { font-size: 16px; margin: 20px 0 8px; }
+        .lesson-meta { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+        .body p, .body ul, .body ol { margin: 10px 0; color: var(--text); }
+        .body ul, .body ol { padding-left: 22px; }
+        .body li { margin: 5px 0; }
+        .body pre {
+            background: var(--bg-alt); border: 1px solid var(--line); border-radius: 8px;
+            padding: 12px 14px; overflow-x: auto; font-size: 13.5px; line-height: 1.55;
+            font-family: Consolas, "Cascadia Code", Menlo, monospace; margin: 12px 0;
+        }
+        .card { background: var(--bg-alt); border: 1px solid var(--line); border-radius: 10px;
+            padding: 16px 18px; margin: 14px 0; }
+        .qq { font-weight: 600; margin-bottom: 8px; }
+        .opt {
+            display: block; width: 100%; text-align: left; margin: 6px 0; padding: 9px 12px;
+            border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
+            color: var(--text); cursor: pointer; font: inherit; font-size: 14.5px;
+        }
+        .opt:hover:not(:disabled) { border-color: var(--accent); }
+        .opt:disabled { cursor: default; opacity: .85; }
+        .opt.correct { border-color: var(--good); background: color-mix(in srgb, var(--good) 12%, var(--bg)); }
+        .opt.wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--bg)); }
+        .why { font-size: 14px; color: var(--muted); margin-top: 8px; display: none; }
+        .why.show { display: block; }
+        .reveal-btn, .btn {
+            border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 8px;
+            padding: 8px 16px; cursor: pointer; font: inherit; font-size: 14.5px;
+        }
+        .reveal-btn:hover, .btn:hover { border-color: var(--accent); color: var(--accent); }
+        .btn.primary { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+        .btn.done { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+        .model { display: none; margin-top: 10px; }
+        .model.show { display: block; }
+        .navrow { display: flex; justify-content: space-between; margin-top: 30px; gap: 10px; }
+        .progressbar { height: 8px; background: var(--bg-alt); border: 1px solid var(--line);
+            border-radius: 6px; overflow: hidden; margin: 6px 0 2px; }
+        .progressbar > div { height: 100%; background: var(--accent); }
+        .tracks { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
+        .tracks .t { background: var(--bg-alt); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+        .tracks .t .name { font-weight: 600; font-size: 14px; }
+        .tracks .t .n { color: var(--muted); font-size: 13px; }
+        .muted { color: var(--muted); }
+        .scorechip { font-size: 12.5px; color: var(--muted); }
+        @media (max-width: 760px) {
+            .layout { flex-direction: column; }
+            nav.side { width: 100%; min-height: 0; border-right: none; border-bottom: 1px solid var(--line);
+                display: flex; flex-wrap: wrap; gap: 2px; padding: 10px; }
+            nav.side .track { width: 100%; margin: 8px 6px 2px; }
+            main { padding: 20px 16px 60px; }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <a class="brand" href="#home">R&amp;D Prep</a>
+        <span class="muted" style="font-size:13px">interview refresher</span>
+        <span class="spacer"></span>
+        <span class="streak" id="streak"></span>
+        <button id="theme-toggle" aria-label="Switch theme">&#9789;</button>
+    </header>
+    <div class="layout">
+        <nav class="side" id="sidenav"></nav>
+        <main id="main"></main>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        // ---------- state ----------
+        const KEY = "rdprep-v1";
+        function loadState() {
+            try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
+        }
+        function saveState(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { } }
+        const state = Object.assign({ done: {}, quiz: {}, visits: [] }, loadState());
+
+        // record today's visit for the streak
+        const today = new Date().toISOString().slice(0, 10);
+        if (!state.visits.includes(today)) { state.visits.push(today); saveState(state); }
+        function streakCount() {
+            const set = new Set(state.visits);
+            let n = 0; const d = new Date();
+            while (set.has(d.toISOString().slice(0, 10))) { n++; d.setDate(d.getDate() - 1); }
+            return n;
+        }
+
+        // ---------- theme ----------
+        (function () {
+            const root = document.documentElement, btn = document.getElementById("theme-toggle");
+            const media = window.matchMedia("(prefers-color-scheme: dark)");
+            function current() { return root.dataset.theme || (media.matches ? "dark" : "light"); }
+            function refresh() { btn.innerHTML = current() === "dark" ? "&#9788;" : "&#9789;"; }
+            let saved = null; try { saved = localStorage.getItem("rdprep-theme"); } catch (e) { }
+            if (saved === "dark" || saved === "light") root.dataset.theme = saved;
+            refresh();
+            btn.addEventListener("click", function () {
+                const next = current() === "dark" ? "light" : "dark";
+                root.dataset.theme = next;
+                try { localStorage.setItem("rdprep-theme", next); } catch (e) { }
+                refresh();
+            });
+        })();
+
+        // ---------- helpers ----------
+        const tracks = [];
+        LESSONS.forEach(l => { if (!tracks.includes(l.track)) tracks.push(l.track); });
+        const byId = {};
+        LESSONS.forEach(l => byId[l.id] = l);
+        function pct(track) {
+            const ls = track ? LESSONS.filter(l => l.track === track) : LESSONS;
+            const done = ls.filter(l => state.done[l.id]).length;
+            return { done, total: ls.length, pct: Math.round(100 * done / ls.length) };
+        }
+        function allQuestions() {
+            const qs = LESSONS.map(l => ({ q: l.interview.q, a: l.interview.a, from: l.title }));
+            EXTRA_QUESTIONS.forEach(e => qs.push({ q: e.q, a: e.a, from: "question bank" }));
+            return qs;
+        }
+        function dayIndex() {
+            const start = new Date("2026-01-01");
+            return Math.floor((new Date() - start) / 86400000);
+        }
+
+        // ---------- rendering ----------
+        function renderNav(activeId) {
+            let h = '<a class="home" href="#home">Dashboard</a>';
+            tracks.forEach(t => {
+                h += '<div class="track">' + t + '</div>';
+                LESSONS.filter(l => l.track === t).forEach(l => {
+                    h += '<a class="lesson' + (l.id === activeId ? " active" : "") + '" href="#lesson/' + l.id + '">'
+                        + '<span>' + l.title + '</span>'
+                        + (state.done[l.id] ? '<span class="tick">&#10003;</span>' : '')
+                        + '</a>';
+                });
+            });
+            document.getElementById("sidenav").innerHTML = h;
+            document.getElementById("streak").innerHTML = "streak: <b>" + streakCount() + "</b> day" + (streakCount() === 1 ? "" : "s");
+        }
+
+        function renderHome() {
+            renderNav(null);
+            const o = pct(null);
+            const qs = allQuestions();
+            const qod = qs[dayIndex() % qs.length];
+            const next = LESSONS.find(l => !state.done[l.id]);
+            let h = '<h1>Dashboard</h1>'
+                + '<p class="muted">' + o.done + ' of ' + o.total + ' lessons complete.</p>'
+                + '<div class="progressbar"><div style="width:' + o.pct + '%"></div></div>'
+                + '<div class="tracks">';
+            tracks.forEach(t => {
+                const p = pct(t);
+                h += '<div class="t"><div class="name">' + t + '</div>'
+                    + '<div class="progressbar"><div style="width:' + p.pct + '%"></div></div>'
+                    + '<div class="n">' + p.done + ' / ' + p.total + '</div></div>';
+            });
+            h += '</div>';
+            if (next) {
+                h += '<p><a class="btn primary" href="#lesson/' + next.id + '">Continue: ' + next.title + '</a></p>';
+            } else {
+                h += '<p><b>All lessons complete.</b> Re-run quizzes cold, or ask Claude for mock interviews.</p>';
+            }
+            h += '<h2>Interview question of the day</h2>'
+                + '<div class="card"><div class="qq">' + qod.q + '</div>'
+                + '<p class="muted" style="font-size:13px">Answer OUT LOUD first. Then compare.</p>'
+                + '<button class="reveal-btn" onclick="this.nextElementSibling.classList.add(\'show\'); this.style.display=\'none\'">Reveal model answer</button>'
+                + '<div class="model"><p>' + qod.a + '</p><p class="muted" style="font-size:12.5px">from: ' + qod.from + '</p></div>'
+                + '</div>';
+            h += '<h2>How to use this site</h2>'
+                + '<ul class="body"><li>One lesson per day, in order or by appetite. Read, then take the quiz cold.</li>'
+                + '<li>Answer the interview question at the end of each lesson out loud before revealing.</li>'
+                + '<li>The question of the day rotates through every question on the site. That is your daily rep.</li>'
+                + '<li>Progress and streak are stored in this browser only.</li></ul>';
+            document.getElementById("main").innerHTML = h;
+        }
+
+        function renderLesson(id) {
+            const l = byId[id];
+            if (!l) { location.hash = "#home"; return; }
+            renderNav(id);
+            const idx = LESSONS.indexOf(l);
+            const prev = LESSONS[idx - 1], next = LESSONS[idx + 1];
+            const best = state.quiz[id];
+            let h = '<h1>' + l.title + '</h1>'
+                + '<div class="lesson-meta">' + l.track + ' &middot; about ' + l.mins + ' min'
+                + (best !== undefined ? ' &middot; <span class="scorechip">best quiz: ' + best + '/' + l.quiz.length + '</span>' : '')
+                + '</div>'
+                + '<div class="body">' + l.body + '</div>'
+                + '<h2>Quiz</h2><div id="quiz"></div>'
+                + '<h2>Interview question</h2>'
+                + '<div class="card"><div class="qq">' + l.interview.q + '</div>'
+                + '<p class="muted" style="font-size:13px">Say your answer out loud first. Seriously.</p>'
+                + '<button class="reveal-btn" onclick="this.nextElementSibling.classList.add(\'show\'); this.style.display=\'none\'">Reveal model answer</button>'
+                + '<div class="model"><p>' + l.interview.a + '</p></div></div>'
+                + '<div class="navrow">'
+                + (prev ? '<a class="btn" href="#lesson/' + prev.id + '">&larr; ' + prev.title + '</a>' : '<span></span>')
+                + '<button class="btn ' + (state.done[id] ? "done" : "primary") + '" id="completeBtn">'
+                + (state.done[id] ? "Completed &#10003;" : "Mark complete") + '</button>'
+                + (next ? '<a class="btn" href="#lesson/' + next.id + '">' + next.title + ' &rarr;</a>' : '<span></span>')
+                + '</div>';
+            document.getElementById("main").innerHTML = h;
+            renderQuiz(l);
+            document.getElementById("completeBtn").addEventListener("click", function () {
+                state.done[id] = !state.done[id];
+                saveState(state);
+                renderLesson(id);
+            });
+            window.scrollTo(0, 0);
+        }
+
+        function renderQuiz(l) {
+            const holder = document.getElementById("quiz");
+            let score = 0, answered = 0;
+            l.quiz.forEach((item, qi) => {
+                const card = document.createElement("div");
+                card.className = "card";
+                card.innerHTML = '<div class="qq">' + (qi + 1) + '. ' + item.q + '</div>';
+                item.o.forEach((optText, oi) => {
+                    const b = document.createElement("button");
+                    b.className = "opt";
+                    b.innerHTML = optText;
+                    b.addEventListener("click", function () {
+                        answered++;
+                        const opts = card.querySelectorAll(".opt");
+                        opts.forEach((x, xi) => {
+                            x.disabled = true;
+                            if (xi === item.a) x.classList.add("correct");
+                        });
+                        if (oi === item.a) { score++; }
+                        else { b.classList.add("wrong"); }
+                        card.querySelector(".why").classList.add("show");
+                        if (answered === l.quiz.length) {
+                            const prevBest = state.quiz[l.id];
+                            if (prevBest === undefined || score > prevBest) {
+                                state.quiz[l.id] = score; saveState(state);
+                            }
+                            const res = document.createElement("p");
+                            res.innerHTML = "<b>Score: " + score + " / " + l.quiz.length + "</b>"
+                                + (score === l.quiz.length ? " &mdash; clean sweep." : " &mdash; reread the missed ones, retake tomorrow.");
+                            holder.appendChild(res);
+                        }
+                    });
+                    card.appendChild(b);
+                });
+                const why = document.createElement("div");
+                why.className = "why";
+                why.innerHTML = item.why;
+                card.appendChild(why);
+                holder.appendChild(card);
+            });
+        }
+
+        // ---------- router ----------
+        function route() {
+            const h = location.hash || "#home";
+            if (h.startsWith("#lesson/")) renderLesson(h.slice(8));
+            else renderHome();
+        }
+        window.addEventListener("hashchange", route);
+        route();
+    </script>
+</body>
+
+</html>
