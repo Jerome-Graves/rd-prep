@@ -141,6 +141,22 @@
     </div>
 
     <script src="data.js"></script>
+    <script src="lessons_cpp.js"></script>
+    <script src="lessons_dsp.js"></script>
+    <script src="lessons_acoustics.js"></script>
+    <script src="lessons_control.js"></script>
+    <script src="lessons_electronics.js"></script>
+    <script src="lessons_csmaths.js"></script>
+    <script src="lessons_robotics.js"></script>
+    <script src="lessons_rtl.js"></script>
+    <script src="lessons2_cpp.js"></script>
+    <script src="lessons2_dsp.js"></script>
+    <script src="lessons2_acoustics.js"></script>
+    <script src="lessons2_control.js"></script>
+    <script src="lessons2_electronics.js"></script>
+    <script src="lessons2_csmaths.js"></script>
+    <script src="lessons2_robotics.js"></script>
+    <script src="lessons2_rtl.js"></script>
     <script>const BANKS = {};</script>
     <script src="bank_cpp.js"></script>
     <script src="bank_dsp.js"></script>
@@ -202,25 +218,31 @@
 
         // Map bank topic tags to lesson ids for "go study this" links.
         const TOPIC_LESSON = {
-            raii: "raii", move: "move", stl: "stl", concurrency: "threads", "embedded-cpp": "threads",
-            memory: "stl", idioms: "move", classes: "raii", templates: "stl", const: "raii",
-            sampling: "sampling", quantisation: "sampling", fft: "fft", spectral: "fft",
-            filters: "filters", convolution: "fft", decimation: "sampling", "db-snr": "impedance",
-            timing: "fft", practical: "filters",
-            impedance: "impedance", attenuation: "impedance", transducers: "frontend",
-            beams: "arrays", arrays: "arrays", levitation: "arrays", waves: "impedance",
-            measurement: "impedance", doppler: "sampling", practice: "pid",
-            pid: "pid", stability: "pid", discrete: "pid", statespace: "kalman",
-            kalman: "kalman", estimation: "kalman", motion: "pid", robustness: "pid",
-            opamps: "frontend", "passives-filters": "frontend", "adc-dac": "frontend",
-            "noise-grounding": "frontend", power: "frontend", sensors: "frontend",
-            buses: "embedded", "interrupts-dma": "embedded", rtos: "embedded", "debug-pcb": "embedded",
-            structures: "structures", complexity: "structures", "memory-cache": "structures",
-            fsm: "structures", "concurrency-concepts": "threads",
-            "linear-algebra": "leastsq", optimisation: "leastsq", "floating-point": "leastsq",
-            "probability-stats": "leastsq",
-            estimation: "kalman", "slam-nav": "kalman", locomotion: "pid",
-            actuators: "embedded", architecture: "embedded"
+            raii: "raii", move: "move", stl: "stl", concurrency: "threads",
+            "embedded-cpp": "cpp-embedded", memory: "cpp-memory", idioms: "move",
+            classes: "cpp-classes", templates: "cpp-templates", const: "raii",
+            sampling: "sampling", quantisation: "dsp-noise", fft: "fft", spectral: "dsp-spectral",
+            filters: "filters", convolution: "dsp-convolution", decimation: "dsp-multirate",
+            "db-snr": "dsp-noise", timing: "dsp-timing", practical: "filters",
+            impedance: "impedance", attenuation: "ac-attenuation", transducers: "ac-transducers",
+            beams: "ac-beams", arrays: "arrays", levitation: "arrays", waves: "ac-waves",
+            measurement: "ac-measurement", doppler: "ac-doppler", practice: "pid",
+            pid: "pid", stability: "ct-stability", discrete: "ct-discrete",
+            statespace: "ct-statespace", kalman: "kalman", estimation: "rob-estimation",
+            motion: "ct-motion", robustness: "ct-robust",
+            opamps: "frontend", "passives-filters": "frontend", "adc-dac": "el-adc",
+            "noise-grounding": "el-noise", power: "el-power", sensors: "el-sensors",
+            buses: "el-buses", "interrupts-dma": "embedded", rtos: "embedded", "debug-pcb": "el-debug",
+            structures: "structures", complexity: "cm-hash", "memory-cache": "cm-memory",
+            fsm: "structures", "concurrency-concepts": "cm-concurrency",
+            "linear-algebra": "cm-linalg", optimisation: "leastsq", "floating-point": "cm-float",
+            "probability-stats": "cm-stats",
+            ros: "rob-ros", kinematics: "rob-kinematics", locomotion: "rob-locomotion",
+            perception: "rob-perception", "slam-nav": "rob-slam", actuators: "rob-actuators",
+            architecture: "rob-ros", sim: "rob-sim",
+            "verilog-syntax": "rtl-verilog", "blocking-nba": "rtl-nba", "rtl-design": "rtl-fsm",
+            "timing-cdc": "rtl-cdc", synthesis: "rtl-synth", verification: "rtl-verif",
+            systemverilog: "rtl-sv", "fpga-arch": "rtl-fpga"
         };
 
         function recordResult(item, correct) {
