@@ -1,0 +1,5 @@
+# Keep line endings LF everywhere. Without this, core.autocrlf=true on Windows
+# rewrites the working copy to CRLF on checkout, which produces noisy warnings
+# and can show whole files as changed when the setting differs between machines.
+# text=auto still lets git detect and leave binary files alone.
+* text=auto eol=lf
