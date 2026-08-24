@@ -45,8 +45,19 @@
             width: 250px; flex-shrink: 0; padding: 22px 14px; border-right: 1px solid var(--line);
             min-height: calc(100vh - 54px);
         }
-        nav.side .track { font-size: 12px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: .07em; color: var(--accent); margin: 16px 6px 4px; }
+        nav.side button.track {
+            display: flex; align-items: center; gap: 7px; width: calc(100% - 12px);
+            font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+            color: var(--accent); margin: 10px 6px 2px; padding: 5px 6px; border-radius: 7px;
+            background: none; border: 0; cursor: pointer; font-family: inherit; text-align: left;
+        }
+        nav.side button.track:hover { background: var(--bg-alt); }
+        nav.side button.track .caret { transition: transform .15s ease; flex-shrink: 0; }
+        nav.side button.track.open .caret { transform: rotate(90deg); }
+        nav.side button.track .tname { flex: 1; }
+        nav.side button.track .tcount { color: var(--muted); font-weight: 600; letter-spacing: 0; }
+        nav.side .tgroup { display: none; }
+        nav.side .tgroup.open { display: block; }
         nav.side a.lesson {
             display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px; border-radius: 7px;
             color: var(--text); text-decoration: none; font-size: 14px;
@@ -73,6 +84,25 @@
         .card { background: var(--bg-alt); border: 1px solid var(--line); border-radius: 10px;
             padding: 16px 18px; margin: 14px 0; }
         .qq { font-weight: 600; margin-bottom: 8px; }
+        /* code shown inside a question, and inside an explanation */
+        .qq pre, .why pre {
+            background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+            padding: 12px 14px; overflow-x: auto; font-size: 13px; line-height: 1.5;
+            font-family: Consolas, "Cascadia Code", Menlo, monospace; margin: 10px 0;
+            font-weight: 400; white-space: pre; color: var(--text);
+        }
+        .why pre { background: var(--bg); }
+        .qq code, .why code, .opt code { font-family: Consolas, "Cascadia Code", Menlo, monospace; font-size: .94em; }
+        .qtag {
+            display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .08em;
+            text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent);
+            border-radius: 4px; padding: 1px 6px; margin-right: 8px; vertical-align: 2px;
+        }
+        .opt pre {
+            background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+            padding: 8px 10px; margin: 0; overflow-x: auto; font-size: 12.5px; line-height: 1.45;
+            font-family: Consolas, "Cascadia Code", Menlo, monospace; white-space: pre;
+        }
         .opt {
             display: block; width: 100%; text-align: left; margin: 6px 0; padding: 9px 12px;
             border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
@@ -82,8 +112,53 @@
         .opt:disabled { cursor: default; opacity: .85; }
         .opt.correct { border-color: var(--good); background: color-mix(in srgb, var(--good) 12%, var(--bg)); }
         .opt.wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--bg)); }
-        .why { font-size: 14px; color: var(--muted); margin-top: 8px; display: none; }
+        .why { font-size: 14px; color: var(--muted); margin-top: 8px; display: none; line-height: 1.55; }
         .why.show { display: block; }
+        .why p { margin: 0 0 8px; }
+        .why p:last-child { margin-bottom: 0; }
+        /* glossary term + its floating tooltip */
+        .gloss {
+            border-bottom: 1px dashed var(--accent); cursor: help; outline: none;
+        }
+        .gloss:hover, .gloss:focus { background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 3px; }
+        #glosspop {
+            position: fixed; z-index: 999; max-width: 340px; opacity: 0; visibility: hidden;
+            transition: opacity .12s ease; pointer-events: none;
+            background: var(--bg); color: var(--text); border: 1px solid var(--accent);
+            border-radius: 9px; padding: 11px 13px; font-size: 13.5px; line-height: 1.5;
+            font-weight: 400; text-align: left; box-shadow: 0 8px 26px rgba(0,0,0,.35);
+        }
+        #glosspop.show { opacity: 1; visibility: visible; pointer-events: auto; }
+        #glosspop .gp-term { font-weight: 700; color: var(--accent); margin-bottom: 4px;
+            font-family: Consolas, "Cascadia Code", Menlo, monospace; font-size: 13px; }
+        #glosspop .gp-def { margin-bottom: 8px; }
+        #glosspop .gp-def code { font-family: Consolas, "Cascadia Code", Menlo, monospace;
+            font-size: .93em; background: var(--bg-alt); padding: 1px 4px; border-radius: 3px; }
+        #glosspop .gp-link { color: var(--accent); font-weight: 600; text-decoration: none;
+            font-size: 12.5px; display: inline-block; border-top: 1px solid var(--line);
+            padding-top: 7px; width: 100%; }
+        #glosspop .gp-link:hover { text-decoration: underline; }
+
+        .lref { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 8px; }
+        .lref > summary {
+            cursor: pointer; color: var(--accent); font-weight: 600; font-size: 14px;
+            list-style: none; padding: 4px 0; user-select: none;
+        }
+        .lref > summary::-webkit-details-marker { display: none; }
+        .lref > summary::before { content: "\25B8 "; display: inline-block; transition: transform .15s ease; }
+        .lref[open] > summary::before { transform: rotate(90deg); }
+        .lref-body {
+            margin-top: 10px; max-height: 46vh; overflow-y: auto; padding: 12px 14px;
+            background: var(--bg-alt); border: 1px solid var(--line); border-radius: 8px;
+            color: var(--text); font-size: 14.5px; line-height: 1.6;
+        }
+        .lref-body h3 { font-size: 15px; margin: 16px 0 6px; }
+        .lref-body h3:first-child { margin-top: 0; }
+        .lref-body p, .lref-body li { font-size: 14.5px; }
+        .lref-body pre { max-width: 100%; overflow-x: auto; }
+        .lref-open { display: inline-block; margin-top: 10px; color: var(--accent);
+            font-weight: 600; font-size: 14px; text-decoration: none; }
+        .lref-open:hover { text-decoration: underline; }
         .reveal-btn, .btn {
             border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 8px;
             padding: 8px 16px; cursor: pointer; font: inherit; font-size: 14.5px; text-decoration: none;
@@ -121,7 +196,8 @@
             .layout { flex-direction: column; }
             nav.side { width: 100%; min-height: 0; border-right: none; border-bottom: 1px solid var(--line);
                 display: flex; flex-wrap: wrap; gap: 2px; padding: 10px; }
-            nav.side .track { width: 100%; margin: 8px 6px 2px; }
+            nav.side button.track { width: calc(100% - 12px); margin: 8px 6px 2px; }
+            nav.side .tgroup { width: 100%; }
             main { padding: 20px 16px 60px; }
         }
     </style>
@@ -157,6 +233,10 @@
     <script src="lessons2_csmaths.js"></script>
     <script src="lessons2_robotics.js"></script>
     <script src="lessons2_rtl.js"></script>
+    <script src="lessons_embc.js"></script>
+    <script src="lessons2_embc.js"></script>
+    <script src="lessons3_embc.js"></script>
+    <script src="lessons4_embc.js"></script>
     <script>const BANKS = {};</script>
     <script src="bank_cpp.js"></script>
     <script src="bank_dsp.js"></script>
@@ -166,6 +246,11 @@
     <script src="bank_csmaths.js"></script>
     <script src="bank_robotics.js"></script>
     <script src="bank_rtl.js"></script>
+    <script src="bank_embc.js"></script>
+    <script src="bank_embc2.js"></script>
+    <script src="bank_embc3.js"></script>
+    <script src="bank_embc_code.js"></script>
+    <script src="glossary.js"></script>
     <script>
         // ---------- state ----------
         const KEY = "rdprep-v1";
@@ -173,7 +258,8 @@
             try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
         }
         function saveState(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { } }
-        const state = Object.assign({ done: {}, quiz: {}, visits: [], results: {} }, loadState());
+        const state = Object.assign({ done: {}, quiz: {}, visits: [], results: {}, navOpen: {} }, loadState());
+        if (!state.navOpen) state.navOpen = {};
         if (!state.results) state.results = {};
 
         const today = new Date().toISOString().slice(0, 10);
@@ -288,21 +374,184 @@
         }
         function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
+        // ---------- glossary tooltips ----------
+        // Terms from glossary.js are found in rendered prose, underlined, and given a
+        // tooltip. Matching is done on text nodes only, and never inside code, links or
+        // headings, so nothing in a code sample gets rewritten.
+        const GLOSS_LOOKUP = {};      // lowercased surface form -> canonical key
+        let GLOSS_RE = null;
+        (function buildGlossary() {
+            if (typeof GLOSSARY !== "object") return;
+            const forms = [];
+            Object.keys(GLOSSARY).forEach(key => {
+                [key].concat(GLOSSARY[key].aka || []).forEach(f => {
+                    GLOSS_LOOKUP[f.toLowerCase()] = key;
+                    forms.push(f);
+                });
+            });
+            // longest first, so "memory barrier" wins over "memory" and
+            // "-Wsizeof-pointer-memaccess" over "-Wall"-style prefixes
+            forms.sort((a, b) => b.length - a.length);
+            const esc = s => s.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&");
+            GLOSS_RE = new RegExp(
+                "(?<![A-Za-z0-9_.\\-])(" + forms.map(esc).join("|") + ")(?![A-Za-z0-9_\\-])",
+                "gi");
+        })();
+
+        const GLOSS_SKIP = { PRE: 1, CODE: 1, A: 1, BUTTON: 1, SUMMARY: 1, SCRIPT: 1, STYLE: 1, H1: 1, H2: 1, H3: 1 };
+
+        function annotateGlossary(root) {
+            if (!root || !GLOSS_RE) return;
+            const seen = new Set();          // one tooltip per term per container
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+                acceptNode(n) {
+                    if (!n.nodeValue || n.nodeValue.length < 2) return NodeFilter.FILTER_REJECT;
+                    for (let p = n.parentNode; p && p !== root; p = p.parentNode) {
+                        if (GLOSS_SKIP[p.nodeName]) return NodeFilter.FILTER_REJECT;
+                        if (p.classList && p.classList.contains("gloss")) return NodeFilter.FILTER_REJECT;
+                    }
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            });
+            const nodes = [];
+            let n;
+            while ((n = walker.nextNode())) nodes.push(n);
+
+            nodes.forEach(node => {
+                GLOSS_RE.lastIndex = 0;
+                const text = node.nodeValue;
+                let m, last = 0, frag = null;
+                while ((m = GLOSS_RE.exec(text)) !== null) {
+                    const key = GLOSS_LOOKUP[m[1].toLowerCase()];
+                    if (!key || seen.has(key)) continue;
+                    seen.add(key);
+                    if (!frag) frag = document.createDocumentFragment();
+                    if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+                    const span = document.createElement("span");
+                    span.className = "gloss";
+                    span.setAttribute("data-term", key);
+                    span.setAttribute("tabindex", "0");
+                    span.textContent = m[1];
+                    frag.appendChild(span);
+                    last = m.index + m[1].length;
+                }
+                if (frag) {
+                    if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+                    node.parentNode.replaceChild(frag, node);
+                }
+            });
+        }
+
+        // one floating popover, reused; a fixed-position element so it is never
+        // clipped by the scrolling lesson panel
+        let glossPop = null, glossAnchor = null, glossHide = null;
+        function glossPopEl() {
+            if (!glossPop) {
+                glossPop = document.createElement("div");
+                glossPop.id = "glosspop";
+                glossPop.addEventListener("mouseenter", () => clearTimeout(glossHide));
+                glossPop.addEventListener("mouseleave", scheduleGlossHide);
+                document.body.appendChild(glossPop);
+            }
+            return glossPop;
+        }
+        function showGloss(el) {
+            const key = el.getAttribute("data-term");
+            const g = GLOSSARY[key];
+            if (!g) return;
+            clearTimeout(glossHide);
+            glossAnchor = el;
+            const p = glossPopEl();
+            const lesson = byId[g.l];
+            p.innerHTML = '<div class="gp-term">' + key + '</div>'
+                + '<div class="gp-def">' + g.d + '</div>'
+                + (lesson ? '<a class="gp-link" href="#lesson/' + g.l + '" target="_blank">'
+                    + lesson.title + ' &rarr;</a>' : '');
+            p.classList.add("show");
+            // measure, then place above or below depending on room
+            const r = el.getBoundingClientRect();
+            const pr = p.getBoundingClientRect();
+            let left = r.left + r.width / 2 - pr.width / 2;
+            left = Math.max(8, Math.min(left, window.innerWidth - pr.width - 8));
+            let top = r.top - pr.height - 10;
+            if (top < 8) top = r.bottom + 10;
+            p.style.left = left + "px";
+            p.style.top = top + "px";
+        }
+        function scheduleGlossHide() {
+            clearTimeout(glossHide);
+            glossHide = setTimeout(() => {
+                if (glossPop) glossPop.classList.remove("show");
+                glossAnchor = null;
+            }, 180);
+        }
+        document.addEventListener("mouseover", e => {
+            const el = e.target.closest && e.target.closest(".gloss");
+            if (el) showGloss(el);
+        });
+        document.addEventListener("mouseout", e => {
+            if (e.target.closest && e.target.closest(".gloss")) scheduleGlossHide();
+        });
+        document.addEventListener("focusin", e => {
+            const el = e.target.closest && e.target.closest(".gloss");
+            if (el) showGloss(el);
+        });
+        document.addEventListener("click", e => {
+            const el = e.target.closest && e.target.closest(".gloss");
+            if (el) { e.preventDefault(); showGloss(el); }        // tap support
+            else if (!e.target.closest || !e.target.closest("#glosspop")) scheduleGlossHide();
+        });
+        document.addEventListener("keydown", e => { if (e.key === "Escape") scheduleGlossHide(); });
+
+        // Collapsed panel holding the lesson text that covers a question.
+        // Shown under the explanation so you can read the source without leaving the test.
+        function lessonRef(topicId) {
+            const l = byId[topicId];
+            if (!l) return "";
+            return '<details class="lref"><summary>Read the lesson: ' + l.title + '</summary>'
+                + '<div class="lref-body">' + l.body + '</div>'
+                + '<a class="lref-open" href="#lesson/' + l.id + '" target="_blank">'
+                + 'Open the full lesson in a new tab &rarr;</a></details>';
+        }
+
         // ---------- nav ----------
         function renderNav(activeId, activeTop) {
             let h = '<a class="top' + (activeTop === "home" ? " active" : "") + '" href="#home">Dashboard</a>'
                 + '<a class="top' + (activeTop === "test" ? " active" : "") + '" href="#test">Practice test</a>'
                 + '<a class="top' + (activeTop === "results" ? " active" : "") + '" href="#results">My results</a>';
             tracks.forEach(t => {
-                h += '<div class="track">' + t + '</div>';
-                LESSONS.filter(l => l.track === t).forEach(l => {
+                const inTrack = LESSONS.filter(l => l.track === t);
+                const hasActive = inTrack.some(l => l.id === activeId);
+                // a track is open if the user opened it, or it holds the lesson being read
+                const open = hasActive || state.navOpen[t] === true;
+                const doneN = inTrack.filter(l => state.done[l.id]).length;
+                h += '<button class="track' + (open ? " open" : "") + '" data-track="' + esc(t) + '">'
+                    + '<span class="caret">&#9656;</span>'
+                    + '<span class="tname">' + t + '</span>'
+                    + '<span class="tcount">' + doneN + '/' + inTrack.length + '</span>'
+                    + '</button>';
+                h += '<div class="tgroup' + (open ? " open" : "") + '">';
+                inTrack.forEach(l => {
                     h += '<a class="lesson' + (l.id === activeId ? " active" : "") + '" href="#lesson/' + l.id + '">'
                         + '<span>' + l.title + '</span>'
                         + (state.done[l.id] ? '<span class="tick">&#10003;</span>' : '')
                         + '</a>';
                 });
+                h += '</div>';
             });
-            document.getElementById("sidenav").innerHTML = h;
+            const nav = document.getElementById("sidenav");
+            nav.innerHTML = h;
+            nav.querySelectorAll("button.track").forEach(b => {
+                b.addEventListener("click", function () {
+                    // derive from what is on screen, not from stored state: a track can be
+                    // open because it holds the active lesson, which state does not record
+                    const nowOpen = !b.classList.contains("open");
+                    state.navOpen[b.getAttribute("data-track")] = nowOpen;
+                    saveState(state);
+                    b.classList.toggle("open", nowOpen);
+                    b.nextElementSibling.classList.toggle("open", nowOpen);
+                });
+            });
             document.getElementById("streak").innerHTML = "streak: <b>" + streakCount() + "</b> day" + (streakCount() === 1 ? "" : "s");
         }
 
@@ -381,6 +630,7 @@
                 saveState(state);
                 renderLesson(id);
             });
+            annotateGlossary(document.getElementById("main"));
             window.scrollTo(0, 0);
         }
 
@@ -488,7 +738,7 @@
                 + '<span class="muted">' + item.track + ' &middot; ' + item.t + '</span></div>'
                 + '<div class="progressbar"><div style="width:' + Math.round(100 * test.i / test.items.length) + '%"></div></div>'
                 + '<div class="card"><div class="qq">' + item.q + '</div><div id="opts"></div>'
-                + '<div class="why" id="why">' + item.why + '</div></div>'
+                + '<div class="why" id="why">' + item.why + lessonRef(item.t) + '</div></div>'
                 + '<div class="navrow"><button class="btn" id="quitBtn">End test</button>'
                 + '<button class="btn primary" id="nextBtn" style="display:none">Next &rarr;</button></div>';
             document.getElementById("main").innerHTML = h;
@@ -518,6 +768,7 @@
                 if (test.i > 0 || document.getElementById("why").classList.contains("show")) renderTestDone();
                 else { location.hash = "#test"; renderTestSetup(); }
             });
+            annotateGlossary(document.getElementById("main"));
             window.scrollTo(0, 0);
         }
 

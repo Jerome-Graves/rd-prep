@@ -1,0 +1,156 @@
+/* Glossary. Terms are auto-detected in lesson bodies and answer explanations,
+   underlined, and given a hover/tap tooltip with a definition and a link to the
+   lesson that covers them.
+
+   Format:  "term": { d: "definition", l: "lesson-id", aka: ["alias", ...] }
+
+   Keep terms UNAMBIGUOUS. A word that has an ordinary English meaning in this
+   material (clean, section, tick, fake, spy) will false-positive constantly, so
+   either use the longer phrase or leave it out. */
+
+const GLOSSARY = {
+
+// ---- concurrency and interrupts -------------------------------------------
+"atomic": { d: "Indivisible: it either happens completely or not at all, with no point in the middle where another context can see a half-finished state. <code>reg |= bit</code> is NOT atomic, because it is a load, an OR and a store.", l: "emb-concurrency", aka: ["atomicity", "atomically"] },
+"memory barrier": { d: "An instruction telling the CPU not to move memory accesses across this point. Needed on cores with write buffers or out-of-order execution. <code>volatile</code> is a compiler instruction and is not a barrier.", l: "emb-dma", aka: ["memory barriers", "barrier instruction"] },
+"reentrant": { d: "Safe to call again while a previous call is still part-way through, typically because an interrupt preempted it. Requires no shared static or global state.", l: "emb-isr", aka: ["reentrancy", "non-reentrant"] },
+"race condition": { d: "A bug whose outcome depends on the relative timing of two contexts. Usually caused by two things touching the same data with nothing enforcing an order.", l: "emb-concurrency", aka: ["race conditions"] },
+"critical section": { d: "A span of code during which interrupts (or the scheduler) are disabled so a sequence completes without interference. Keep them as short as possible: they add to every interrupt's latency.", l: "emb-concurrency", aka: ["critical sections"] },
+"priority inversion": { d: "A high-priority task is blocked on a mutex held by a low-priority task, which cannot run because a medium-priority task keeps preempting it. Caused the Mars Pathfinder resets.", l: "emb-rtos" },
+"priority inheritance": { d: "The kernel temporarily raises a mutex holder's priority to that of the highest task waiting on it, so it finishes and releases. This is what prevents priority inversion, and it is why a mutex is not a semaphore.", l: "emb-rtos" },
+"mutex": { d: "A lock with an <b>owner</b>, used for mutual exclusion. Because the kernel knows who holds it, it can apply priority inheritance.", l: "emb-rtos", aka: ["mutexes"] },
+"semaphore": { d: "A counter with no owner, used for signalling. Anyone can give it. Because there is no owner, it cannot provide priority inheritance.", l: "emb-rtos", aka: ["semaphores"] },
+"deadlock": { d: "Two or more contexts each waiting for something only the other can release, so none of them ever proceeds.", l: "emb-rtos" },
+"starvation": { d: "A task never gets to run because something of higher priority never blocks. On a strictly priority-based scheduler this is guaranteed, not merely likely.", l: "emb-rtos" },
+"ISR": { d: "Interrupt Service Routine: the function the hardware calls when an interrupt fires. It must not block, must not allocate, and should be as short as possible.", l: "emb-isr", aka: ["ISRs", "interrupt handler", "interrupt handlers", "interrupt context"] },
+"interrupt latency": { d: "The time between an interrupt asserting and its handler starting. A global property: anything that disables interrupts, or any long handler, spends everyone's budget.", l: "emb-realtime" },
+"jitter": { d: "Variation in timing between one occurrence and the next. Often matters more than absolute latency, because control algorithms assume a fixed timestep.", l: "emb-realtime" },
+"WCET": { d: "Worst-Case Execution Time. The number a deadline is missed by, so it must be measured under worst-case conditions: cold cache, every branch taken, flash busy, all interrupts enabled.", l: "emb-realtime", aka: ["worst-case execution time"] },
+"preempt": { d: "To interrupt a running task and switch to a more urgent one before the first has finished.", l: "emb-rtos", aka: ["preempts", "preempted", "preemption", "preemptive"] },
+"context switch": { d: "Saving one task's registers and stack pointer and restoring another's, so the CPU resumes a different task.", l: "emb-rtos", aka: ["context switches"] },
+"ring buffer": { d: "A fixed array with a head and a tail index used as a queue. With one producer and one consumer, and one slot sacrificed, it needs no lock at all.", l: "emb-concurrency", aka: ["ring buffers", "circular buffer"] },
+"FromISR": { d: "The RTOS API variant safe to call from interrupt context: it never blocks, and it reports whether a higher-priority task was woken so the handler can yield.", l: "emb-rtos" },
+"bus master": { d: "Anything that can initiate transfers on the memory bus. The CPU is one; a DMA controller is another, which is why masking interrupts does not stop DMA.", l: "emb-dma", aka: ["bus masters"] },
+
+// ---- C language traps -----------------------------------------------------
+"integer promotion": { d: "Any type narrower than <code>int</code> is converted to <code>int</code> before an operator is applied. This is why <code>~a</code> on a <code>uint8_t</code> gives 0xFFFFFF00, not 0x00.", l: "emb-types", aka: ["integer promotions", "promoted", "promotes", "promotion"] },
+"undefined behaviour": { d: "The standard imposes no requirements at all, so the optimiser may assume it never happens and delete code that would only run if it did. Not 'unpredictable': actively exploited.", l: "emb-ub", aka: ["undefined behavior", "UB"] },
+"implementation-defined": { d: "The behaviour is chosen by the compiler and must be documented. Legal but not portable. The signedness of plain <code>char</code> is the classic example.", l: "emb-types" },
+"strict aliasing": { d: "The compiler may assume that objects of different types do not share memory. Casting a <code>uint8_t*</code> to an <code>int16_t*</code> breaks that assumption and produces bugs that only appear at -O2.", l: "emb-ub" },
+"sequence point": { d: "A point in execution where all previous side effects have completed. Modifying the same object twice without one between, as in <code>i = i++</code>, is undefined.", l: "emb-ub", aka: ["sequence points"] },
+"sign extension": { d: "When a narrow signed value widens, the sign bit is copied into the new high bits. A <code>signed char</code> holding 0x80 becomes 0xFFFFFF80, not 0x00000080.", l: "emb-types", aka: ["sign-extend", "sign-extends", "sign extend"] },
+"two's complement": { d: "The standard binary representation for signed integers, where the top bit carries negative weight. Since C23 it is the only representation the standard allows.", l: "emb-types" },
+"padding": { d: "Bytes the compiler inserts between struct members so each one lands on an address its type requires. Their contents are unspecified, which is why you must never send a struct down a wire.", l: "emb-structs", aka: ["pad bytes", "padding bytes", "tail padding"] },
+"alignment": { d: "The requirement that an object's address be a multiple of some value, usually its size. A 32-bit load normally needs a 4-byte-aligned address.", l: "emb-structs", aka: ["aligned", "unaligned", "unaligned access"] },
+"endianness": { d: "The order in which the bytes of a multi-byte value are stored. Little-endian puts the least significant byte at the lowest address; ARM and x86 are little-endian, network protocols are traditionally big-endian.", l: "emb-serial", aka: ["little-endian", "big-endian", "byte order"] },
+"decay": { d: "An array used in an expression becomes a pointer to its first element. It is why an array parameter loses its size, and why <code>sizeof(buf)</code> inside a function gives the pointer size.", l: "emb-pointers", aka: ["decays", "decayed"] },
+"dangling pointer": { d: "A pointer to memory whose lifetime has ended, such as a returned local. It frequently appears to work, because nothing erases the bytes until something reuses them.", l: "emb-pointers", aka: ["dangling"] },
+"type punning": { d: "Reading the same bytes as a different type. Safe via <code>memcpy</code> or (in C) a union; unsafe via a pointer cast, which breaks strict aliasing.", l: "emb-ub" },
+"translation unit": { d: "One .c file plus everything it includes, as seen by the compiler. A <code>static</code> variable in a header gives every translation unit its own private copy.", l: "emb-preproc", aka: ["translation units"] },
+"internal linkage": { d: "A symbol visible only within its own translation unit, which is what <code>static</code> at file scope gives you. It also suppresses the duplicate-symbol link error.", l: "emb-preproc" },
+"opaque handle": { d: "A struct declared in a header but defined only in the .c file. Callers can hold a pointer and nothing else, so internals change without recompiling users.", l: "emb-drivers", aka: ["opaque type", "opaque struct"] },
+"static assert": { d: "A condition checked by the compiler. Generates no code, cannot be disabled by NDEBUG, and a failing one never ships because the build does not exist.", l: "emb-errors", aka: ["_Static_assert", "static_assert"] },
+
+// ---- memory and build -----------------------------------------------------
+".bss": { d: "The section holding uninitialised (or zero-initialised) globals and statics. Costs RAM only: startup simply zeroes the region, so nothing needs storing in flash.", l: "emb-memory" },
+".data": { d: "The section holding globals and statics with a non-zero initialiser. Costs flash <b>and</b> RAM: the values live in flash and startup copies them into RAM.", l: "emb-memory" },
+".rodata": { d: "Read-only data: <code>const</code> tables and string literals. Lives in flash only, which is why adding <code>const</code> to a large table halves what it costs you.", l: "emb-memory" },
+".text": { d: "The section holding executable code. Lives in flash and is normally executed in place.", l: "emb-memory" },
+"linker script": { d: "The file declaring the physical memory regions and mapping output sections into them. The only place that can control where things live.", l: "emb-build", aka: ["linker scripts"] },
+"map file": { d: "The linker's report of every symbol, its size and which object file it came from. The tool that answers 'why did my firmware grow 40 kB'.", l: "emb-build" },
+"LMA": { d: "Load Memory Address: where a section is stored in the image, typically flash. For <code>.data</code> this differs from where it runs.", l: "emb-build", aka: ["load address"] },
+"VMA": { d: "Virtual Memory Address: where a section actually lives when the program runs. For <code>.data</code> this is RAM.", l: "emb-build", aka: ["run address"] },
+"startup code": { d: "The code that runs before <code>main</code>: it copies .data from flash to RAM, zeroes .bss, runs static constructors, then calls main.", l: "emb-memory", aka: ["Reset_Handler"] },
+"vector table": { d: "The table of exception handler addresses. On Cortex-M the first word is the initial stack pointer and the second is the reset vector, both read by hardware before any code runs.", l: "emb-memory" },
+"stack frame": { d: "The region of stack belonging to one function call, holding its locals and saved registers. Released on return, though nothing erases it.", l: "emb-memory", aka: ["stack frames"] },
+"high water mark": { d: "The minimum free stack a task has ever had. FreeRTOS fills the stack with a pattern and counts what remains untouched, which is how you size a stack by measurement rather than guess.", l: "emb-rtos" },
+"ELF": { d: "The linker's full output: code, data, symbols and debug information. Flash the stripped .bin, but archive the ELF, because fault addresses from the field only decode against it.", l: "emb-build" },
+"objcopy": { d: "The tool that extracts the raw bytes from an ELF into a .bin or .hex for flashing, discarding the symbols and debug information.", l: "emb-build" },
+
+// ---- faults and debugging -------------------------------------------------
+"watchdog": { d: "An independent timer that resets the part if software stops proving it is alive. Any change making it less likely to fire is making it worse at its only job.", l: "emb-faults", aka: ["watchdogs"] },
+"brownout": { d: "The supply voltage sagging below the part's minimum. Produces faults that look exactly like software bugs, which is why you measure the rails first.", l: "emb-diagnose" },
+"hard fault": { d: "The Cortex-M catch-all exception. Common causes: null dereference, unaligned access on M0, and touching a peripheral whose clock is off.", l: "emb-faults", aka: ["hard faults", "bus fault", "usage fault", "memory management fault"] },
+"CFSR": { d: "Configurable Fault Status Register: the Cortex-M register whose bits say which category of fault occurred. Read it in your fault handler rather than guessing.", l: "emb-faults" },
+"reset reason": { d: "A register recording why the part last reset: power-on, brownout, watchdog, software or fault. One read distinguishes investigations that would otherwise take hours.", l: "emb-diagnose", aka: ["reset reason register"] },
+"NVIC": { d: "Nested Vectored Interrupt Controller: the Cortex-M block that prioritises and dispatches interrupts. Note that a <b>lower</b> priority number means more urgent.", l: "emb-isr" },
+"MPU": { d: "Memory Protection Unit: hardware that enforces access permissions on address regions. Can turn a silent stack overflow into an immediate fault.", l: "emb-faults" },
+"SWD": { d: "Serial Wire Debug: ARM's two-pin debug interface, a clock and a bidirectional data line. Replaces the wider JTAG when pins are scarce.", l: "emb-debugarch" },
+"ITM": { d: "Instrumentation Trace Macrocell: writing a byte to a stimulus port costs a few cycles, so it does not move the timing you are investigating. Unlike printf, which does.", l: "emb-debugarch" },
+"ETM": { d: "Embedded Trace Macrocell: records the actual instruction stream, so you can reconstruct what executed before a crash. ITM is instrumentation you insert; ETM records execution itself.", l: "emb-debugarch" },
+"DWT": { d: "Data Watchpoint and Trace unit. Its free-running cycle counter is the cheapest accurate way to time a function, with no external tooling.", l: "emb-debugarch" },
+"watchpoint": { d: "A breakpoint on <b>data</b>: the core halts when a given address is read or written. The right tool for finding what corrupts a variable.", l: "emb-debugarch", aka: ["watchpoints", "data watchpoint"] },
+"logic analyser": { d: "An instrument that captures digital lines and decodes bus protocols. Its most useful output is often a clean trace, which rules out the bus and points at software.", l: "emb-diagnose", aka: ["logic analyzer"] },
+
+// ---- buses and wire protocols ---------------------------------------------
+"open-drain": { d: "A pin that can only pull the line low; a pull-up resistor returns it high. Used by I2C so any device can hold the line, but it makes rise time an RC problem.", l: "emb-buses", aka: ["open drain"] },
+"pull-up": { d: "A resistor holding a line high when nothing is driving it low. 'Stronger' means <b>lower</b> resistance, which charges the bus capacitance faster.", l: "emb-buses", aka: ["pull-ups", "pullup", "pullups"] },
+"rise time": { d: "How long a released line takes to reach a valid high, set by the pull-up resistance times the bus capacitance. Standard-mode I2C allows 1000 ns, fast mode 300 ns.", l: "emb-buses" },
+"START condition": { d: "On I2C, SDA falling while SCL is high. During data SDA may only change while SCL is low, so this pattern is unambiguously a control signal.", l: "emb-buses" },
+"repeated START": { d: "A second START issued without an intervening STOP, so the bus is never released. This is what makes a register read one indivisible transaction.", l: "emb-buses" },
+"NAK": { d: "No acknowledge: nobody pulled SDA low on the ninth clock. On the address byte it means nothing at that address responded, so there is no data to have been corrupted.", l: "emb-buses", aka: ["NACK", "ACK"] },
+"clock stretching": { d: "An I2C slave holding SCL low to make the master wait until it is ready. Not all masters support it, which is a real compatibility trap.", l: "emb-buses" },
+"CPHA": { d: "SPI clock phase: which clock edge the data is sampled on. Getting it wrong shifts every bit one position, so 0x41 reads back as 0x82.", l: "emb-buses", aka: ["CPOL", "SPI mode"] },
+"full duplex": { d: "Both directions carry data simultaneously, as SPI does on MOSI and MISO. It is why MOSI going quiet during a read is correct rather than a fault.", l: "emb-buses" },
+"baud rate": { d: "Symbols per second on a UART. Derived by dividing a clock by an integer, so rounding error grows as the divider shrinks, which is why high rates fail first.", l: "emb-buses", aka: ["baud", "baud divider"] },
+"framing": { d: "How a receiver knows where one message ends and the next begins: fixed length, a length prefix, or a delimiter with escaping. Only the delimiter resynchronises by itself.", l: "emb-serial" },
+"COBS": { d: "Consistent Overhead Byte Stuffing: an encoding that removes a chosen delimiter byte from the payload with a small, bounded and predictable overhead.", l: "emb-serial" },
+"CRC": { d: "A checksum computed as polynomial division, chosen so common physical error patterns are guaranteed detectable. Detects accidental corruption only: an attacker can recompute it.", l: "emb-serial" },
+"HMAC": { d: "A keyed hash. Unlike a CRC it cannot be recomputed without the secret, so it detects deliberate tampering as well as accidental corruption.", l: "emb-serial" },
+
+// ---- drivers, testing and process -----------------------------------------
+"injected transport": { d: "Passing a driver a small struct of function pointers (read, write, delay) plus an opaque context, instead of letting it call the vendor HAL. This is what makes it testable on a host.", l: "emb-drivers", aka: ["dependency injection", "transport struct"] },
+"test double": { d: "Any stand-in for a real dependency in a test. The four kinds are stub (fixed answers), spy (records calls), fake (simplified working version) and mock (records and asserts expectations).", l: "emb-testing", aka: ["test doubles", "doubles"] },
+"HIL": { d: "Hardware In the Loop: a PC driving the target plus programmable instruments over their comms ports, so scenarios run repeatably and produce a report.", l: "emb-hil", aka: ["hardware in the loop"] },
+"TDD": { d: "Test Driven Development: write a failing test, make it pass, refactor. The red step matters because a test that has never failed may assert nothing at all.", l: "emb-testing" },
+"static analysis": { d: "Tooling that reasons across function boundaries and along execution paths, finding things a compiler misses: leaks on error paths, null dereferences across calls.", l: "emb-defensive", aka: ["static analyser", "static analyzer"] },
+"MISRA": { d: "A coding standard for critical embedded C. Its real value is the deviation process, which turns a rule violation into an argued decision on the record.", l: "emb-defensive" },
+"deviation": { d: "A recorded, justified departure from a coding standard rule. What separates a considered exception from an accident nobody noticed.", l: "emb-defensive", aka: ["deviations", "deviation process"] },
+"traceability": { d: "The link from a test result back to the requirement it verifies. It is the evidence regulated work needs, and it exposes requirements no test covers.", l: "emb-hil" },
+
+// ---- numeric, state, timing -----------------------------------------------
+"fixed point": { d: "Representing fractions using integers with an implied binary point. Q16.16 means 16 integer bits and 16 fractional bits, so the stored value is the real value times 65536.", l: "emb-fixedpoint", aka: ["fixed-point", "Q format", "Q16.16"] },
+"saturation": { d: "Clamping a value at its limit instead of letting it wrap. Wrapping turns full forward into full reverse, which for an actuator is a safety issue.", l: "emb-fixedpoint", aka: ["saturate", "saturating"] },
+"state machine": { d: "Explicit named states plus defined transitions, replacing a set of booleans whose illegal combinations nobody has enumerated.", l: "emb-fsm", aka: ["state machines", "FSM", "finite state machine"] },
+"hierarchical state machine": { d: "A state machine where a parent state holds behaviour common to its children, so shared transitions are written once. Usually overkill below about a dozen states.", l: "emb-fsm", aka: ["HSM"] },
+"rate monotonic": { d: "A fixed-priority scheduling policy where the shortest period gets the highest priority. Provably optimal among fixed-priority policies for independent periodic tasks.", l: "emb-realtime", aka: ["rate monotonic scheduling", "RMS"] },
+"utilisation bound": { d: "The CPU load below which a set of independent periodic tasks is guaranteed schedulable under rate monotonic: about 69 per cent. Above it you must analyse rather than assume.", l: "emb-realtime", aka: ["utilization bound"] },
+"hard real time": { d: "A missed deadline is a system failure. It is about consequence, not speed: a slow system with a guaranteed deadline is hard real time, a fast one without a guarantee is not.", l: "emb-realtime", aka: ["hard real-time", "soft real time", "soft real-time"] },
+
+// ---- DMA, cache, power, storage -------------------------------------------
+"DMA": { d: "Direct Memory Access: a controller that moves data without the CPU, so the core can sleep or do other work. It is a separate bus master, so masking interrupts does not stop it.", l: "emb-dma" },
+"cache coherency": { d: "Keeping what the CPU sees in cache consistent with what is actually in memory. DMA writes to RAM directly, so the CPU may hold a stale cached line unless you invalidate it.", l: "emb-dma", aka: ["coherency", "cache coherence"] },
+"cache line": { d: "The unit a cache loads and evicts, typically 32 or 64 bytes. Cache maintenance works on whole lines, which is why a DMA buffer sharing a line with other variables is dangerous.", l: "emb-dma", aka: ["cache lines"] },
+"cache invalidate": { d: "Discarding cached lines so the CPU re-reads from actual memory. Needed <b>after</b> DMA has written a buffer. The opposite operation, cache clean, pushes your writes out before DMA reads them.", l: "emb-dma", aka: ["cache clean", "cache maintenance"] },
+"write buffer": { d: "Hardware that holds stores briefly before they reach memory. It is why a barrier can be needed even when volatile has already forced the store to be emitted.", l: "emb-dma" },
+"circular mode": { d: "A DMA mode where the controller wraps to the start of the buffer automatically, with half and full interrupts so you process one half while hardware fills the other.", l: "emb-dma" },
+"duty cycle": { d: "The fraction of time something is active. On a battery device it dominates average current, because active current is typically a thousand times sleep current.", l: "emb-power" },
+"PLL": { d: "Phase-Locked Loop: multiplies a reference clock up to the CPU frequency. If it fails to lock most parts run quietly from a fallback source, and every timing calculation is then wrong.", l: "emb-power" },
+"RC oscillator": { d: "An on-chip clock source needing no crystal, typically accurate to one or two per cent and worse over temperature. That error alone can consume the whole UART tolerance budget.", l: "emb-power", aka: ["internal RC"] },
+"deep sleep": { d: "A low-power mode that powers down most of the chip. RAM outside a small retention region is lost, so waking resembles a reset, and only an armed source can wake it at all.", l: "emb-power" },
+"retention": { d: "The small region of RAM that stays powered through deep sleep. Anything that must survive goes here or in non-volatile storage.", l: "emb-power", aka: ["retention RAM", "retention region"] },
+"endurance": { d: "How many erase cycles a flash sector tolerates, commonly 10,000 to 100,000. It is per sector, so a scheme that hammers one sector kills the product while the rest is untouched.", l: "emb-flash" },
+"wear levelling": { d: "Spreading erases across sectors so no single one wears out first. Without it, one hot record concentrates every erase on one sector.", l: "emb-flash", aka: ["wear leveling"] },
+"log-structured": { d: "A storage scheme that only ever appends records, erasing a sector when it fills. Multiplies flash life by the records per sector, and leaves the previous record valid until compaction.", l: "emb-flash" },
+"A/B slots": { d: "Two firmware partitions, so a new image is written to the inactive one and verified before switching. There is no window in which a power failure leaves the device unbootable.", l: "emb-bootloader", aka: ["A/B partitions", "dual slot"] },
+"anti-rollback": { d: "Refusing to boot an image older than a recorded version counter, to stop an attacker reinstating a vulnerable release. Conflicts with the reliability wish to revert a broken update.", l: "emb-bootloader" },
+"secure boot": { d: "Verifying a cryptographic signature on the firmware before running it. A CRC proves integrity only; a signature proves origin, which is what stops an attacker's image running.", l: "emb-bootloader" },
+
+// ---- compiler and linker flags --------------------------------------------
+"-O0": { d: "No optimisation. Code maps line-for-line to the source, so debugging is easy, but missing <code>volatile</code> and undefined behaviour are both invisible here. That is why a bug can appear only when you turn optimisation on.", l: "emb-build" },
+"-O1": { d: "Light optimisation. Rarely used deliberately: -Og is the better development setting and -O2 or -Os the better release setting.", l: "emb-build" },
+"-O2": { d: "Full optimisation for speed: inlining, loop transformations, reordering, and aggressive use of undefined behaviour to delete unreachable code. The usual release setting, and where volatile and UB bugs surface.", l: "emb-build" },
+"-O3": { d: "-O2 plus more aggressive inlining and vectorisation. Often larger with little speed gain on a microcontroller, so it is rarely the right choice for embedded.", l: "emb-build" },
+"-Os": { d: "Optimise for size: -O2 with the transformations that grow code (aggressive inlining, loop unrolling) disabled. Usually the right release setting on a flash-constrained part.", l: "emb-build" },
+"-Og": { d: "Optimised but still debuggable. Keeps most optimisation while preserving a sensible line order and variable visibility. The right everyday development default.", l: "emb-build" },
+"-Wall": { d: "Enables a large set of useful warnings. Despite the name it is not all of them: add -Wextra. Turning these on and fixing the fallout is usually the cheapest defect reduction available.", l: "emb-defensive" },
+"-Wextra": { d: "A further set of warnings beyond -Wall, including unused parameters and some sign comparison issues.", l: "emb-defensive" },
+"-Werror": { d: "Turns every warning into an error. This is what makes warnings stick: without it the count creeps up and nobody notices the new one among the old.", l: "emb-defensive" },
+"-Wundef": { d: "Warns when an undefined identifier is used in an <code>#if</code>. Without it a typo in a config macro silently evaluates as 0 and disables a whole block.", l: "emb-defensive" },
+"-Wconversion": { d: "Warns about implicit conversions that may change a value, such as assigning an <code>int</code> to a <code>uint8_t</code>. Noisy on existing code but valuable on new code.", l: "emb-defensive" },
+"-Wshadow": { d: "Warns when a local variable hides one from an outer scope, which is a common source of 'I set it but it did not change'.", l: "emb-defensive" },
+"-Wsizeof-pointer-memaccess": { d: "Catches <code>sizeof(buf)</code> on an array parameter passed to memcpy or memset, where it silently gives the pointer size. Part of -Wall.", l: "emb-pointers" },
+"-Wmisleading-indentation": { d: "Warns when indentation suggests a statement is inside an <code>if</code> or loop when it is not. Catches many instances of the Apple goto fail shape, though not all.", l: "emb-defensive" },
+"NDEBUG": { d: "The macro that compiles out <code>assert()</code>. It is why a runtime assert is absent in release builds, exactly where the check would matter, and why a static assert is preferable when the condition is constant.", l: "emb-errors" }
+
+};
