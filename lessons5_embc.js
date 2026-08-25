@@ -6,6 +6,7 @@ LESSONS.push(
 {
 id: "emb-cm-model",
 track: "Embedded C",
+sub: "Cortex-M architecture",
 title: "The Cortex-M programmer's model",
 mins: 24,
 body: `
@@ -92,6 +93,7 @@ a: "First I would read the fault status registers rather than guess, because CFS
 {
 id: "emb-cm-exceptions",
 track: "Embedded C",
+sub: "Cortex-M architecture",
 title: "The exception model: stacking, EXC_RETURN and tail-chaining",
 mins: 26,
 body: `
@@ -216,6 +218,7 @@ a: "The handler needs to capture the stacked frame first, so I would have a smal
 {
 id: "emb-cm-nvic",
 track: "Embedded C",
+sub: "Cortex-M architecture",
 title: "NVIC, priorities and masking",
 mins: 25,
 body: `
@@ -297,6 +300,7 @@ a: "First I would find out how many priority bits the part actually implements, 
 {
 id: "emb-cm-systick",
 track: "Embedded C",
+sub: "Cortex-M architecture",
 title: "SysTick, PendSV and how a context switch actually happens",
 mins: 24,
 body: `
@@ -386,6 +390,7 @@ a: "The core does half the work already. On any exception entry it stacks eight 
 {
 id: "emb-cm-memory",
 track: "Embedded C",
+sub: "Cortex-M architecture",
 title: "The memory map, memory types and barriers",
 mins: 26,
 body: `
@@ -491,6 +496,7 @@ a: "Less often than on a big application processor, because the peripheral regio
 {
 id: "emb-cm-mpu",
 track: "Embedded C",
+sub: "Cortex-M architecture",
 title: "The MPU: turning silent corruption into an immediate fault",
 mins: 23,
 body: `
@@ -578,6 +584,7 @@ a: "I would separate what is cheap from what is expensive, because full task iso
 {
 id: "emb-cm-cmsis",
 track: "Embedded C",
+sub: "Cortex-M architecture",
 title: "CMSIS, intrinsics and reading the disassembly",
 mins: 22,
 body: `

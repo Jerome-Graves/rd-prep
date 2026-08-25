@@ -6,6 +6,7 @@ LESSONS.push(
 {
 id: "emb-volatile",
 track: "Embedded C",
+sub: "The C language",
 title: "volatile and hardware registers",
 mins: 25,
 body: `
@@ -87,6 +88,7 @@ a: "It does not make it safe and it costs performance. volatile stops the compil
 {
 id: "emb-types",
 track: "Embedded C",
+sub: "The C language",
 title: "Types, promotion and conversion",
 mins: 25,
 body: `
@@ -169,6 +171,7 @@ a: "First, plain int in anything that touches hardware or a protocol, because it
 {
 id: "emb-memory",
 track: "Embedded C",
+sub: "Memory and the build",
 title: "Memory sections, the linker and startup",
 mins: 28,
 body: `
@@ -245,6 +248,7 @@ a: "First I would look at the map file and the size output to see how much RAM i
 {
 id: "emb-structs",
 track: "Embedded C",
+sub: "The C language",
 title: "Struct layout, padding and register maps",
 mins: 26,
 body: `
@@ -328,6 +332,7 @@ a: "First I would find out why it was added, because it is usually someone fight
 {
 id: "emb-bits",
 track: "Embedded C",
+sub: "The C language",
 title: "Bit manipulation and register access types",
 mins: 24,
 body: `
@@ -405,6 +410,7 @@ a: "I would look for four things. Raw bit numbers rather than named constants, b
 {
 id: "emb-isr",
 track: "Embedded C",
+sub: "Interrupts and concurrency",
 title: "Interrupts and what must not happen in them",
 mins: 26,
 body: `
@@ -475,6 +481,7 @@ a: "First I would ask why the handler takes 200 microseconds, because that almos
 {
 id: "emb-concurrency",
 track: "Embedded C",
+sub: "Interrupts and concurrency",
 title: "Shared state, races and ring buffers",
 mins: 28,
 body: `

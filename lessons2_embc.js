@@ -6,6 +6,7 @@ LESSONS.push(
 {
 id: "emb-ub",
 track: "Embedded C",
+sub: "The C language",
 title: "Undefined behaviour that bites embedded code",
 mins: 26,
 body: `
@@ -96,6 +97,7 @@ a: "That pattern almost always means undefined behaviour or a missing volatile, 
 {
 id: "emb-pointers",
 track: "Embedded C",
+sub: "The C language",
 title: "Pointers, declarations and lifetimes",
 mins: 26,
 body: `
@@ -181,6 +183,7 @@ a: "I decide who allocates, who frees and how long it must live, and then I writ
 {
 id: "emb-preproc",
 track: "Embedded C",
+sub: "The C language",
 title: "The preprocessor, macros and headers",
 mins: 22,
 body: `
@@ -254,6 +257,7 @@ a: "Default to static inline functions and treat a function-like macro as needin
 {
 id: "emb-serial",
 track: "Embedded C",
+sub: "Buses and protocols",
 title: "Endianness, serialisation and protocols",
 mins: 24,
 body: `
@@ -327,6 +331,7 @@ a: "Byte order stated explicitly and serialised field by field, never a struct m
 {
 id: "emb-errors",
 track: "Embedded C",
+sub: "Drivers and architecture",
 title: "Error handling and defensive programming",
 mins: 24,
 body: `
@@ -419,6 +424,7 @@ a: "I start from what the caller can usefully do about it, because that decides 
 {
 id: "emb-buses",
 track: "Embedded C",
+sub: "Buses and protocols",
 title: "I2C, SPI and UART: what actually happens on the wire",
 mins: 28,
 body: `
@@ -643,6 +649,7 @@ a: "I would put a scope on SDA and SCL and look at the rising edges before touch
 {
 id: "emb-diagnose",
 track: "Embedded C",
+sub: "Bring-up and diagnosis",
 title: "Diagnosing from traces and symptoms",
 mins: 26,
 body: `
@@ -724,6 +731,7 @@ a: "Power first, current limited, and I measure every rail at the part rather th
 {
 id: "emb-drivers",
 track: "Embedded C",
+sub: "Drivers and architecture",
 title: "Driver architecture and layering",
 mins: 28,
 body: `

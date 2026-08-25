@@ -6,6 +6,7 @@ LESSONS.push(
 {
 id: "emb-fsm",
 track: "Embedded C",
+sub: "Drivers and architecture",
 title: "State machines in firmware",
 mins: 26,
 body: `
@@ -104,6 +105,7 @@ a: "First I would work out what the states actually are by reading the flag comb
 {
 id: "emb-fixedpoint",
 track: "Embedded C",
+sub: "The C language",
 title: "Fixed-point arithmetic",
 mins: 26,
 body: `
@@ -190,6 +192,7 @@ a: "First I would measure rather than assume, because software floating point ma
 {
 id: "emb-bootloader",
 track: "Embedded C",
+sub: "Memory and the build",
 title: "Bootloaders and firmware update",
 mins: 28,
 body: `
@@ -277,6 +280,7 @@ a: "A/B slots, because with a single slot there is a window during which a power
 {
 id: "emb-flash",
 track: "Embedded C",
+sub: "Memory and the build",
 title: "Flash memory, wear and storing settings",
 mins: 24,
 body: `
@@ -357,6 +361,7 @@ a: "First I would find out how the settings are written, because erase-then-writ
 {
 id: "emb-debugarch",
 track: "Embedded C",
+sub: "Bring-up and diagnosis",
 title: "Debug architecture, SWD and tracing",
 mins: 26,
 body: `
@@ -434,6 +439,7 @@ a: "I would stop trying to halt it, because both stopping the core and instrumen
 {
 id: "emb-realtime",
 track: "Embedded C",
+sub: "Interrupts and concurrency",
 title: "Real-time analysis and timing",
 mins: 26,
 body: `
@@ -516,6 +522,7 @@ a: "I would start by writing the deadline down as a number, because a loop with 
 {
 id: "emb-dma",
 track: "Embedded C",
+sub: "Interrupts and concurrency",
 title: "DMA and the coherency problem",
 mins: 24,
 body: `
@@ -600,6 +607,7 @@ a: "The buffer first: it has to outlive the transfer so it cannot be a local, it
 {
 id: "emb-crc",
 track: "Embedded C",
+sub: "Buses and protocols",
 title: "CRC: what it computes and what it proves",
 mins: 24,
 body: `

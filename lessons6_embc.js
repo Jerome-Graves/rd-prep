@@ -7,6 +7,7 @@ LESSONS.push(
 {
 id: "emb-tdd-loop",
 track: "Embedded C",
+sub: "Testing",
 title: "The TDD cycle, and why the red step is not optional",
 mins: 24,
 body: `
@@ -110,6 +111,7 @@ a: "I would put the argument in terms of when defects get found rather than in t
 {
 id: "emb-tdd-doubles",
 track: "Embedded C",
+sub: "Testing",
 title: "Test doubles and the three ways to substitute in C",
 mins: 26,
 body: `
@@ -226,6 +228,7 @@ a: "That is a case you cannot produce on real hardware, which is exactly why it 
 {
 id: "emb-tdd-unity",
 track: "Embedded C",
+sub: "Testing",
 title: "Unity, CMock, Ceedling and CppUTest",
 mins: 25,
 body: `
@@ -341,6 +344,7 @@ a: "I would start far smaller than the tooling question suggests. The first goal
 {
 id: "emb-tdd-dualtarget",
 track: "Embedded C",
+sub: "Testing",
 title: "Dual targeting: develop on the host, run on the target",
 mins: 24,
 body: `
@@ -434,6 +438,7 @@ a: "Anything physical, and I think being clear about that is what makes the rest
 {
 id: "emb-tdd-legacy",
 track: "Embedded C",
+sub: "Testing",
 title: "Getting legacy firmware under test",
 mins: 26,
 body: `
@@ -535,6 +540,7 @@ a: "I would not start by proposing a rewrite or by trying to get the whole thing
 {
 id: "emb-tdd-design",
 track: "Embedded C",
+sub: "Testing",
 title: "Testability as design pressure",
 mins: 23,
 body: `
@@ -629,6 +635,7 @@ a: "I would frame it as a consequence rather than a style objection, because say
 {
 id: "emb-tdd-coverage",
 track: "Embedded C",
+sub: "Testing",
 title: "Coverage, mutation testing and what tests do not tell you",
 mins: 24,
 body: `

@@ -8,6 +8,7 @@ LESSONS.push(
 {
 id: "emb-adc-fw",
 track: "Embedded C",
+sub: "Analogue and signals",
 title: "Driving an ADC from firmware",
 mins: 25,
 body: `
@@ -102,6 +103,7 @@ a: "I would work through configuration before touching anything analogue, becaus
 {
 id: "emb-sampling",
 track: "Embedded C",
+sub: "Analogue and signals",
 title: "Sampling: timing, triggering and timestamps",
 mins: 24,
 body: `
@@ -212,6 +214,7 @@ a: "My first suspicion would be the sample timing rather than the FFT itself, be
 {
 id: "emb-units",
 track: "Embedded C",
+sub: "Analogue and signals",
 title: "From counts to engineering units",
 mins: 23,
 body: `
@@ -308,6 +311,7 @@ a: "I would keep the driver in counts and do everything else above it in pure fu
 {
 id: "emb-calib",
 track: "Embedded C",
+sub: "Analogue and signals",
 title: "Calibration in firmware",
 mins: 24,
 body: `
@@ -405,6 +409,7 @@ a: "I would separate the parts that change at different rates. Factory calibrati
 {
 id: "emb-pwm",
 track: "Embedded C",
+sub: "Analogue and signals",
 title: "PWM: resolution, safe updates and analogue output",
 mins: 24,
 body: `
@@ -496,6 +501,7 @@ a: "PWM into a low-pass filter is the obvious answer, and I would want to establ
 {
 id: "emb-filter-fw",
 track: "Embedded C",
+sub: "Analogue and signals",
 title: "Filters you actually write in firmware",
 mins: 24,
 body: `
@@ -593,6 +599,7 @@ a: "I would want to know what kind of noise it is before choosing anything, beca
 {
 id: "emb-averaging",
 track: "Embedded C",
+sub: "Analogue and signals",
 title: "Averaging, oversampling and when they lie",
 mins: 23,
 body: `

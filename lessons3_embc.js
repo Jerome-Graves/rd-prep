@@ -6,6 +6,7 @@ LESSONS.push(
 {
 id: "emb-testing",
 track: "Embedded C",
+sub: "Testing",
 title: "Testing firmware without hardware",
 mins: 30,
 body: `
@@ -95,6 +96,7 @@ a: "That plugging it in and seeing a good reading only tests the happy path, whi
 {
 id: "emb-hil",
 track: "Embedded C",
+sub: "Testing",
 title: "Hardware in the loop and where tests belong",
 mins: 26,
 body: `
@@ -176,6 +178,7 @@ a: "I would start from the requirements rather than from the rig, because a scen
 {
 id: "emb-defensive",
 track: "Embedded C",
+sub: "Drivers and architecture",
 title: "Coding standards, MISRA and static analysis",
 mins: 22,
 body: `
@@ -258,6 +261,7 @@ a: "I have worked to project standards rather than to certified MISRA, and I hav
 {
 id: "emb-rtos",
 track: "Embedded C",
+sub: "Interrupts and concurrency",
 title: "Tasks, queues and priority",
 mins: 26,
 body: `
@@ -340,6 +344,7 @@ a: "I would start by asking what forces them apart, because a task needs a reaso
 {
 id: "emb-faults",
 track: "Embedded C",
+sub: "Bring-up and diagnosis",
 title: "Faults, watchdogs and postmortem debugging",
 mins: 24,
 body: `
@@ -419,6 +424,7 @@ a: "First I would find out what the device already knows. The reset reason regis
 {
 id: "emb-power",
 track: "Embedded C",
+sub: "Interrupts and concurrency",
 title: "Clocks, power modes and what they break",
 mins: 22,
 body: `
@@ -497,6 +503,7 @@ a: "By measuring rather than reasoning, because the answer is usually not where 
 {
 id: "emb-build",
 track: "Embedded C",
+sub: "Memory and the build",
 title: "Toolchain, linker scripts and the map file",
 mins: 24,
 body: `
