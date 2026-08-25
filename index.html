@@ -100,6 +100,25 @@
         .figcap { color: var(--muted); font-size: 13px; margin: -6px 0 16px; }
 
         /* code drills: free-response exercises, self-marked */
+        .tresult {
+            display: flex; gap: 10px; align-items: flex-start; padding: 7px 11px; margin: 4px 0;
+            border-radius: 7px; border: 1px solid var(--line); background: var(--bg); font-size: 14px;
+        }
+        .tresult .tag {
+            font-family: Consolas, "Cascadia Code", Menlo, monospace; font-size: 12px; font-weight: 700;
+            min-width: 40px;
+        }
+        .tresult.pass { border-color: var(--good); }
+        .tresult.pass .tag { color: var(--good); }
+        .tresult.fail { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, var(--bg)); }
+        .tresult.fail .tag { color: var(--bad); }
+        .verdict { font-size: 18px; font-weight: 700; margin: 14px 0 6px; }
+        .verdict.ok  { color: var(--good); }
+        .verdict.bad { color: var(--bad); }
+        .gccline {
+            font-family: Consolas, "Cascadia Code", Menlo, monospace; font-size: 12.5px;
+            white-space: pre; overflow-x: auto; color: var(--muted); margin: 2px 0 0 68px;
+        }
         .checkout { margin: 12px 0 0; display: none; }
         .checkout.show { display: block; }
         .diag {
@@ -336,6 +355,8 @@
     <script src="drills_embc.js"></script>
     <script src="drills2_embc.js"></script>
     <script src="ccheck.js"></script>
+    <script src="crun.js"></script>
+    <script src="drilltests.js"></script>
     <script>
         // ---------- state ----------
         const KEY = "rdprep-v1";
@@ -997,7 +1018,10 @@
                     ? "List every fault you can find, and say why each one matters."
                     : "Write it here. Include the error handling.") + '"></textarea>'
                 + '<div class="btnrow"><button class="btn" id="checkBtn">Check my code</button>'
-                + '<button class="btn primary" id="revealBtn">Reveal model answer</button></div>'
+                + (d.test ? '<button class="btn primary" id="runBtn">Compile and run tests</button>' : '')
+                + '<button class="btn' + (d.test ? '' : ' primary') + '" id="revealBtn">Reveal model answer</button></div>'
+                + (d.testSig ? '<p class="muted" style="font-size:13px;margin-top:8px">'
+                    + 'The tests expect: ' + esc(d.testSig) + '</p>' : '')
                 + '<div class="checkout" id="checkout"></div>'
                 + '<div class="model" id="model"><h2>Model answer</h2>'
                 + '<div class="body">' + d.answer + '</div>'
@@ -1081,6 +1105,97 @@
                 out.innerHTML = h;
                 out.classList.add("show");
             });
+
+            if (d.test) {
+                document.getElementById("runBtn").addEventListener("click", function () {
+                    const out = document.getElementById("checkout");
+                    const btn = this;
+                    const src = ta.value;
+
+                    if (!src.trim()) {
+                        out.innerHTML = '<div class="diag warn"><span class="ln">&mdash;</span>'
+                            + '<span>Write something first.</span></div>';
+                        out.classList.add("show");
+                        return;
+                    }
+
+                    btn.disabled = true;
+                    const was = btn.textContent;
+                    btn.textContent = "Compiling...";
+                    out.innerHTML = '<div class="diag"><span class="ln">gcc</span>'
+                        + '<span>Sending to the compiler...</span></div>';
+                    out.classList.add("show");
+
+                    const answer = (d.testPrelude ? d.testPrelude + "\n" : "") + src;
+                    crunCompileAndRun(answer, d.test).then(r => {
+                        btn.disabled = false;
+                        btn.textContent = was;
+                        let h = "";
+
+                        if (!r.networkOk) {
+                            h = '<div class="diag err"><span class="ln">offline</span><span>'
+                              + 'Could not reach the compiler service: ' + esc(r.error || "no connection") + '. '
+                              + 'This needs an internet connection. Use <b>Check my code</b> for the '
+                              + 'local syntax check, which works offline.</span></div>';
+                            out.innerHTML = h;
+                            return;
+                        }
+
+                        const errs = r.diagnostics.filter(x => x.severity === "error");
+                        const warns = r.diagnostics.filter(x => x.severity === "warning");
+
+                        function diag(x, cls) {
+                            const where = x.where === "yours"
+                                ? "line " + x.line
+                                : "harness";
+                            let out2 = '<div class="diag ' + cls + '"><span class="ln">' + where + '</span><span>'
+                                     + esc(x.msg) + '</span></div>';
+                            if (x.context.length) {
+                                out2 += '<div class="gccline">' + esc(x.context.join("\n")) + '</div>';
+                            }
+                            return out2;
+                        }
+
+                        if (errs.length) {
+                            h += '<div class="verdict bad">It did not compile</div>';
+                            errs.forEach(x => { h += diag(x, "err"); });
+                        }
+                        warns.forEach(x => { h += diag(x, "warn"); });
+
+                        if (r.built) {
+                            if (r.failed === 0 && r.passed > 0) {
+                                h += '<div class="verdict ok">All ' + r.passed + ' tests passed</div>';
+                            } else if (r.passed + r.failed > 0) {
+                                h += '<div class="verdict bad">' + r.failed + ' of '
+                                   + (r.passed + r.failed) + ' tests failed</div>';
+                            } else {
+                                h += '<div class="verdict bad">It built but produced no test output</div>';
+                            }
+                            r.tests.forEach(t => {
+                                h += '<div class="tresult ' + (t.pass ? "pass" : "fail") + '">'
+                                   + '<span class="tag">' + (t.pass ? "PASS" : "FAIL") + '</span>'
+                                   + '<span>' + esc(t.name) + '</span></div>';
+                            });
+                            if (r.stdout.length) {
+                                h += '<h3 style="margin-top:14px">Program output</h3>'
+                                   + '<div class="gccline" style="margin-left:0">'
+                                   + esc(r.stdout.join("\n")) + '</div>';
+                            }
+                            if (r.exitCode !== 0 && r.failed === 0) {
+                                h += '<div class="diag warn"><span class="ln">exit</span><span>'
+                                   + 'The program exited with code ' + r.exitCode
+                                   + '. A crash or an abort will show here.</span></div>';
+                            }
+                        }
+
+                        h += '<p class="muted" style="font-size:13px;margin-top:12px">'
+                           + 'Real gcc 13.2 with -Wall -Wextra -Wshadow -Wconversion, compiled and run '
+                           + 'through the Compiler Explorer API. Line numbers are your editor\'s.</p>';
+
+                        out.innerHTML = h;
+                    });
+                });
+            }
 
             document.getElementById("revealBtn").addEventListener("click", function () {
                 document.getElementById("model").classList.add("show");
