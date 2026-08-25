@@ -427,6 +427,42 @@ peripheral driver talks to.</p>
 <h3>I2C</h3>
 <p>Two wires, both open-drain and pulled up. A device pulls a line low; nobody ever
 drives it high. That is what allows multiple devices and clock stretching.</p>
+
+<svg class="fig" viewBox="0 0 680 384" role="img" aria-label="I2C timing diagram showing START, data bits, ACK and STOP on SDA and SCL">
+<rect class="bxa" x="40" y="56" width="160" height="48" rx="4"/>
+<text class="th" x="56" y="78">START</text>
+<text class="ts" x="56" y="96">SDA falls, SCL high</text>
+<rect class="bxa" x="410" y="56" width="160" height="48" rx="4"/>
+<text class="th" x="426" y="78">STOP</text>
+<text class="ts" x="426" y="96">SDA rises, SCL high</text>
+<line class="guide" x1="120" y1="110" x2="120" y2="292"/>
+<line class="guide" x1="490" y1="110" x2="490" y2="292"/>
+<rect class="bx" x="40" y="142" width="50" height="36" rx="4"/>
+<text class="th" x="50" y="165">SCL</text>
+<rect class="bx" x="40" y="232" width="50" height="36" rx="4"/>
+<text class="th" x="50" y="255">SDA</text>
+<path class="wave" d="M90 140 L135 140 L135 180 L163 180 L163 140 L191 140 L191 180 L219 180 L219 140 L247 140 L247 180 L275 180 L275 140 L303 140 L303 180 L331 180 L331 140 L359 140 L359 180 L387 180 L387 140 L415 140 L415 180 L445 180 L445 140 L620 140"/>
+<path class="wave" d="M90 230 L120 230 L120 270 L148 270 L148 230 L260 230 L260 270 L316 270 L316 230 L372 230 L372 270 L490 270 L490 230 L620 230"/>
+<line class="guide" x1="545" y1="306" x2="400" y2="286"/>
+<rect class="bx" x="40" y="310" width="185" height="54" rx="4"/>
+<text class="th" x="56" y="332">While SCL is low</text>
+<text class="ts" x="56" y="350">SDA may change</text>
+<rect class="bx" x="245" y="310" width="185" height="54" rx="4"/>
+<text class="th" x="261" y="332">While SCL is high</text>
+<text class="ts" x="261" y="350">SDA must be stable</text>
+<rect class="bx" x="450" y="310" width="190" height="54" rx="4"/>
+<text class="th" x="466" y="332">The 9th clock is ACK</text>
+<text class="ts" x="466" y="350">slave pulls SDA low</text>
+</svg>
+<p class="figcap">Abbreviated: five clocks shown where a real byte takes nine. Every SDA
+transition happens while SCL is low, except the two that define START and STOP. Rising
+edges are drawn square here; on a scope they are RC curves, because nothing drives a line
+high.</p>
+
+<p><b>The whole protocol falls out of one decision.</b> Because data may only change while
+SCL is low, an SDA transition while SCL is <b>high</b> can never be data. That frees up
+exactly two patterns to mean something else, and I2C spends both: falling is START, rising
+is STOP. No escape sequences, no reserved bytes, no framing overhead.</p>
 <ul>
 <li><b>START</b>: SDA falls while SCL is high. During data, SDA may only change while
 SCL is low, so a change while SCL is high is unmistakably a control signal.</li>
@@ -451,6 +487,49 @@ at 100 pF gives 4.5 microseconds, several times outside spec. A stronger pull-up
 <h3>SPI</h3>
 <p>Four wires, full duplex, one chip select per device. No addressing and no
 acknowledgement, so the bus never tells you the device is absent.</p>
+
+<svg class="fig" viewBox="0 0 680 534" role="img" aria-label="SPI mode 0 timing diagram showing chip select, clock, MOSI and MISO through a register read">
+<rect class="bxa" x="40" y="40" width="230" height="48" rx="4"/>
+<text class="th" x="56" y="62">Chip select asserted</text>
+<text class="ts" x="56" y="80">low for the whole transfer</text>
+<rect class="bxa" x="490" y="40" width="150" height="48" rx="4"/>
+<text class="th" x="506" y="62">CS high again</text>
+<text class="ts" x="506" y="80">transfer ends</text>
+<line class="guide" x1="140" y1="88" x2="140" y2="445"/>
+<line class="guide" x1="590" y1="88" x2="590" y2="445"/>
+<rect class="bx" x="40" y="122" width="60" height="36" rx="4"/>
+<text class="th" x="50" y="145">CS</text>
+<rect class="bx" x="40" y="212" width="60" height="36" rx="4"/>
+<text class="th" x="50" y="235">SCLK</text>
+<rect class="bx" x="40" y="302" width="60" height="36" rx="4"/>
+<text class="th" x="50" y="325">MOSI</text>
+<rect class="bx" x="40" y="392" width="60" height="36" rx="4"/>
+<text class="th" x="50" y="415">MISO</text>
+<path class="wave" d="M110 120 L140 120 L140 160 L590 160 L590 120 L640 120"/>
+<path class="wave" d="M110 250 L160 250 L160 210 L186 210 L186 250 L212 250 L212 210 L238 210 L238 250 L264 250 L264 210 L290 210 L290 250 L316 250 L316 210 L342 210 L342 250 L368 250 L368 210 L394 210 L394 250 L420 250 L420 210 L446 210 L446 250 L472 250 L472 210 L498 210 L498 250 L524 250 L524 210 L550 210 L550 250 L640 250"/>
+<path class="wave" d="M110 340 L150 340 L150 300 L186 300 L186 340 L238 340 L238 300 L290 300 L290 340 L640 340"/>
+<path class="wave" d="M110 390 L342 390 L342 430 L394 430 L394 390 L498 390 L498 430 L550 430 L550 390 L640 390"/>
+<rect class="bx" x="40" y="460" width="185" height="54" rx="4"/>
+<text class="th" x="56" y="482">Mode 0</text>
+<text class="ts" x="56" y="500">sampled on rising edges</text>
+<rect class="bx" x="245" y="460" width="185" height="54" rx="4"/>
+<text class="th" x="261" y="482">Full duplex</text>
+<text class="ts" x="261" y="500">both carry data at once</text>
+<rect class="bx" x="450" y="460" width="190" height="54" rx="4"/>
+<text class="th" x="466" y="482">MOSI goes quiet</text>
+<text class="ts" x="466" y="500">nothing left to send</text>
+</svg>
+<p class="figcap">Mode 0, showing a register read: four clocks of command on MOSI, then
+four clocks where the master only clocks and the slave answers on MISO. Data changes on
+falling edges and is sampled on rising ones, which is why every transition sits safely
+away from the sampling instant.</p>
+
+<p><b>Compare the two diagrams and the difference is the point.</b> I2C spends bus time on
+addressing, acknowledgement and framing, and gets multi-device sharing on two wires in
+return. SPI has none of that: chip select does the addressing, so there is no address byte,
+no ACK, and no way for the bus to tell you the device is missing. That is why a SPI
+bring-up starts by reading an ID register, and why all 0xFF is such a common first
+result.</p>
 <ul>
 <li><b>CPOL</b> is the idle clock level; <b>CPHA</b> selects which edge samples. Together
 they make modes 0 to 3. Get it wrong and every bit arrives one position out, which shows

@@ -81,6 +81,18 @@
             padding: 12px 14px; overflow-x: auto; font-size: 13.5px; line-height: 1.55;
             font-family: Consolas, "Cascadia Code", Menlo, monospace; margin: 12px 0;
         }
+        /* inline SVG figures in lesson bodies. Theme-aware: everything is drawn
+           from the palette variables so light and dark both work. */
+        svg.fig { display: block; width: 100%; height: auto; margin: 18px 0; }
+        svg.fig text { font-family: inherit; fill: var(--text); }
+        svg.fig .th { font-size: 14px; font-weight: 600; }
+        svg.fig .ts { font-size: 12px; fill: var(--muted); }
+        svg.fig .bx { fill: var(--bg-alt); stroke: var(--line); stroke-width: 1; }
+        svg.fig .bxa { fill: var(--bg-alt); stroke: var(--accent); stroke-width: 1; }
+        svg.fig .wave { fill: none; stroke: var(--text); stroke-width: 1.6; stroke-linejoin: round; }
+        svg.fig .guide { stroke: var(--muted); stroke-width: 0.6; stroke-dasharray: 4 4; }
+        .figcap { color: var(--muted); font-size: 13px; margin: -6px 0 16px; }
+
         .card { background: var(--bg-alt); border: 1px solid var(--line); border-radius: 10px;
             padding: 16px 18px; margin: 14px 0; }
         .qq { font-weight: 600; margin-bottom: 8px; }

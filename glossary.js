@@ -95,7 +95,11 @@ const GLOSSARY = {
 "baud rate": { d: "Symbols per second on a UART. Derived by dividing a clock by an integer, so rounding error grows as the divider shrinks, which is why high rates fail first.", l: "emb-buses", aka: ["baud", "baud divider"] },
 "framing": { d: "How a receiver knows where one message ends and the next begins: fixed length, a length prefix, or a delimiter with escaping. Only the delimiter resynchronises by itself.", l: "emb-serial" },
 "COBS": { d: "Consistent Overhead Byte Stuffing: an encoding that removes a chosen delimiter byte from the payload with a small, bounded and predictable overhead.", l: "emb-serial" },
-"CRC": { d: "A checksum computed as polynomial division, chosen so common physical error patterns are guaranteed detectable. Detects accidental corruption only: an attacker can recompute it.", l: "emb-serial" },
+"CRC": { d: "A checksum computed as polynomial division, chosen so common physical error patterns are guaranteed detectable. Detects accidental corruption only: an attacker can recompute it.", l: "emb-crc" },
+"check value": { d: "The CRC of the ASCII string 123456789, published for every catalogued CRC. Running yours against it proves all six parameters match, and it needs no hardware.", l: "emb-crc" },
+"polynomial": { d: "The fixed constant a CRC divides by, written as a bit pattern such as 0x1021. Naming it is not enough to specify a CRC: init, reflection, final XOR and coverage must also be agreed.", l: "emb-crc" },
+"reflection": { d: "Whether a CRC processes bits least significant first, and whether the result is bit-reversed. CRC-32 reflects both; CRC-16/CCITT-FALSE reflects neither.", l: "emb-crc", aka: ["reflected"] },
+"checksum": { d: "Any short value computed over data to detect corruption. A plain additive sum is blind to reordering, since addition is commutative, which is why a CRC is usually preferred.", l: "emb-crc" },
 "HMAC": { d: "A keyed hash. Unlike a CRC it cannot be recomputed without the secret, so it detects deliberate tampering as well as accidental corruption.", l: "emb-serial" },
 
 // ---- drivers, testing and process -----------------------------------------

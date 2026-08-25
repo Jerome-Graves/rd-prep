@@ -595,6 +595,152 @@ interview: {
 q: "You are adding DMA to a UART receive path that currently works with an interrupt per byte. What do you have to get right?",
 a: "The buffer first: it has to outlive the transfer so it cannot be a local, it may need alignment to a cache line so that maintenance operations do not clobber neighbouring variables, and on some parts it has to sit in a region the controller can actually reach. Then the coherency question, and I would be explicit that volatile only fixes the compiler caching a value in a register: on a part with a data cache I need an invalidate before reading, and a barrier so the completion flag check is not reordered against the buffer access. For continuous receive I would use circular mode with half and full interrupts so I process one half while the hardware fills the other, and I would instrument the margin rather than assume the processing finishes in time, because overrunning gives you torn data with no error. And I would expect the classic symptoms while bringing it up: works with a print in it, works with the debugger attached, first transfer fine and later ones not, which is usually an uncleared flag."
 }
+},
+
+{
+id: "emb-crc",
+track: "Embedded C",
+title: "CRC: what it computes and what it proves",
+mins: 24,
+body: `
+<p>A CRC is the remainder of a division. Treat the whole message as one enormous binary
+number, divide it by a fixed constant called the polynomial, and keep what is left over.
+The only twist is that the subtraction inside the division is XOR, because binary
+arithmetic without carries is what hardware can do in one gate.</p>
+
+<p>That is the entire idea. Everything else is bookkeeping about which conventions both
+ends agreed to.</p>
+
+<h3>The whole algorithm</h3>
+<p>This is CRC-16/CCITT-FALSE. A shift register, a test of the top bit, and a conditional
+XOR:</p>
+<pre>uint16_t crc16_ccitt(const uint8_t *data, size_t len)
+{
+    uint16_t crc = 0xFFFF;                      /* the init value */
+
+    for (size_t i = 0; i &lt; len; i++) {
+        crc ^= (uint16_t)data[i] &lt;&lt; 8;          /* byte enters at the TOP */
+
+        for (int bit = 0; bit &lt; 8; bit++) {
+            if (crc &amp; 0x8000) {                 /* top bit set? */
+                crc = (uint16_t)((crc &lt;&lt; 1) ^ 0x1021);
+            } else {
+                crc = (uint16_t)(crc &lt;&lt; 1);
+            }
+        }
+    }
+    return crc;
+}</pre>
+
+<p>The byte is XORed into the <b>top</b> half of the register, not the bottom. That is what
+makes this a division from the most significant end down, which is how long division works
+on paper.</p>
+
+<h3>Watch one byte go through</h3>
+<p>Register starts at 0xFFFF, first byte is 0x31, the ASCII character 1:</p>
+<pre>after xor of byte                          0xCEFF
+bit 0: top was 1 -&gt; shift, then xor poly   0x8DDF
+bit 1: top was 1 -&gt; shift, then xor poly   0x0B9F
+bit 2: top was 0 -&gt; shift only             0x173E
+bit 3: top was 0 -&gt; shift only             0x2E7C
+bit 4: top was 0 -&gt; shift only             0x5CF8
+bit 5: top was 0 -&gt; shift only             0xB9F0
+bit 6: top was 1 -&gt; shift, then xor poly   0x63C1
+bit 7: top was 0 -&gt; shift only             0xC782</pre>
+<p>Eight iterations, one per bit, and the register is ready for the next byte.</p>
+
+<h3>Proving yours is right</h3>
+<p>Every CRC in the published catalogue comes with a <b>check value</b>: the CRC of the
+ASCII string 123456789. Run yours against it and you know at once whether every parameter
+matches.</p>
+<pre>CRC-16/CCITT-FALSE   poly 0x1021, init 0xFFFF        -&gt; 0x29B1
+CRC-16/XMODEM        poly 0x1021, init 0x0000        -&gt; 0x31C3
+CRC-16/ARC           poly 0xA001 reflected, init 0   -&gt; 0xBB3D
+CRC-32               poly 0xEDB88320 refl, init ~0   -&gt; 0xCBF43926</pre>
+<p>Make that your first unit test, before you write a byte of protocol code. It is the
+cheapest possible check and it runs on a host with no hardware.</p>
+
+<h3>The receiver trick</h3>
+<p>You do not have to compute the CRC and compare it. Append the CRC to the frame most
+significant byte first, then run the CRC over the <b>whole thing including the CRC bytes</b>,
+and the answer is zero.</p>
+<pre>if (crc16_ccitt(frame, len) != 0) {
+    reject();          /* one line, any frame length */
+}</pre>
+<p>This falls out of the arithmetic: appending the remainder makes the whole number
+divisible. It removes the separate comparison and the chance of comparing the wrong bytes.</p>
+
+<h3>What actually causes integration arguments</h3>
+<p>A CRC is not defined by its polynomial. Two implementations that agree on the polynomial
+and disagree on any one of these produce different answers, and both are entitled to call
+themselves CRC-16:</p>
+<ul>
+<li><b>Width</b>, 8, 16 or 32</li>
+<li><b>Polynomial</b>, and whether it is written in normal or reversed form</li>
+<li><b>Init</b> value, commonly 0x0000 or 0xFFFF</li>
+<li><b>Reflection</b> of input bytes, of the output, or both</li>
+<li><b>Final XOR</b> applied to the result</li>
+<li><b>Coverage</b>: exactly which bytes are included. Header? Length field? Start delimiter?</li>
+</ul>
+<p>That last one is not part of the algorithm at all, and it is the one most likely to be
+undocumented. Specify all six in the protocol document, and include one worked example frame
+in hex with its CRC. That single example settles more disputes than any amount of prose.</p>
+
+<h3>Making it fast</h3>
+<p>The bitwise version does eight iterations per byte. The table version precomputes what
+those eight iterations do to each possible byte, so it does one:</p>
+<pre>static const uint16_t crc_table[256] = { /* generated at build time */ };
+
+uint16_t crc16_fast(const uint8_t *d, size_t n)
+{
+    uint16_t crc = 0xFFFF;
+    while (n--)
+        crc = (uint16_t)((crc &lt;&lt; 8) ^ crc_table[((crc &gt;&gt; 8) ^ *d++) &amp; 0xFF]);
+    return crc;
+}</pre>
+<p>The table is built by running the bitwise loop over each of 256 values, so the slow
+version remains the definition. Cost is 512 bytes, and declaring it const puts that in flash
+rather than RAM.</p>
+<p>Before writing either, check whether your part has a CRC peripheral. Most STM32s and the
+ESP32 have one, and then it is a register write per word with no table at all.</p>
+
+<h3>Why a CRC and not a sum</h3>
+<p>A simple additive checksum is blind to reordering, because addition is commutative: swap
+two bytes and the sum is unchanged. It also misses many multi-bit patterns.</p>
+<p>A CRC is chosen so that the error patterns physical layers actually produce, particularly
+bursts, are <b>guaranteed</b> detectable up to a known length. For the same field width you
+get far better detection, and with a table or a peripheral it is not slower in any way that
+matters.</p>
+
+<h3>The thing it does not do</h3>
+<p>A CRC detects accidental corruption. It is a public, keyless function, so anyone who can
+modify a message can recompute the CRC over the modified message and produce something
+indistinguishable from a valid frame.</p>
+<p>Keeping the polynomial secret does not help either: it can be recovered from a handful of
+known message and CRC pairs.</p>
+<p>Integrity against an adversary needs a keyed construction such as an HMAC, or a signature
+where the receiver must verify origin without holding the secret. This is the same
+distinction as a bootloader checking a CRC versus verifying a signature. One catches a
+corrupted download, the other refuses firmware you did not produce.</p>
+`,
+quiz: [
+{ q: "What does a CRC actually compute?",
+o: ["A sum of the bytes", "The remainder of a division, using XOR in place of subtraction", "A hash of the message", "A count of set bits"],
+a: 1, why: "The message is treated as one long binary number and divided by the polynomial. XOR replaces subtraction because binary arithmetic without carries is what hardware does cheaply." },
+{ q: "You append the CRC to a frame and run the CRC over the whole thing including those bytes. What should you get?",
+o: ["The CRC again", "Zero", "The init value", "It is not meaningful"],
+a: 1, why: "Appending the remainder makes the whole number divisible, so the remainder becomes zero. It lets the receiver check any frame length in one line with no comparison." },
+{ q: "Two implementations agree on the polynomial and produce different answers. What is the most likely cause?",
+o: ["A hardware fault", "Disagreement about init, reflection, final XOR or which bytes are covered", "Different CPU endianness", "Different compilers"],
+a: 1, why: "The polynomial is one of six things that must match. Coverage is the one most often left undocumented, and it is not part of the algorithm at all." },
+{ q: "Does a CRC protect a firmware image against tampering?",
+o: ["Yes", "No: it is keyless, so an attacker recomputes it over the modified image", "Only CRC-32 does", "Only if the polynomial is secret"],
+a: 1, why: "It is an error-detection code, not a security primitive. A secret polynomial does not help either, since it can be recovered from known message and CRC pairs. Use an HMAC or a signature." }
+],
+interview: {
+q: "You are defining a serial protocol between a device and a PC. Talk me through the integrity check.",
+a: "I would use a CRC rather than an additive checksum, because a sum is blind to transposition and misses a lot of multi-bit patterns, whereas a CRC guarantees detection of burst errors up to a known length for the same field width. CRC-16/CCITT-FALSE is a reasonable default and most parts have a hardware unit for it. The important part is the specification rather than the algorithm: I would write down width, polynomial, init value, whether input and output are reflected, the final XOR, and above all exactly which bytes are covered, because coverage is not part of the algorithm and is the thing that gets left out. Then one worked example frame in hex with its CRC, which settles integration arguments faster than any prose. On the implementation side I would test against the published check value for the string 123456789 before writing any protocol code, since that catches a wrong parameter immediately and runs on a host. On the receive side I would run the CRC over the frame including the CRC bytes and check for zero, which handles any length in one line. And I would be clear with whoever asks that this detects accidental corruption only. If the requirement is to reject frames an attacker wrote, that needs an HMAC or a signature, which is a different mechanism and a key management problem."
+}
 }
 
 );
