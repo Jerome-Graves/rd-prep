@@ -224,6 +224,73 @@ const GLOSSARY = {
 "two-point calibration": { d: "Measuring two known values near each end of the range to solve for both offset and gain. One point solves only for offset, assuming nominal gain; more points address linearity, which is a different model.", l: "emb-calib", aka: ["one-point calibration"] },
 "offset and gain": { d: "The two coefficients of <code>corrected = (raw - offset) * gain</code>. Offset removes the constant error, gain the proportional one. Both are per unit, so they live in non-volatile storage rather than in the source.", l: "emb-calib" },
 
+// ---- general electronics and systems --------------------------------------
+"ADC": { d: "Analogue to Digital Converter. Measures its input as a fraction of its reference, so the reference is as much part of your accuracy as the converter is.", l: "emb-adc-fw", aka: ["DAC"] },
+"RTOS": { d: "Real-Time Operating System: a scheduler plus synchronisation primitives. Justified by tasks with different rates, blocking work, or different priorities, not by tidiness.", l: "emb-rtos" },
+"VDD": { d: "The positive supply rail. Using it as the ADC reference is right when the sensor is also powered from it (ratiometric) and wrong when the sensor has its own reference.", l: "emb-units", aka: ["VCC"] },
+"SAR": { d: "Successive Approximation Register: the common ADC architecture that makes one bit decision per clock. Rushing its clock makes those decisions marginal, which looks like noise rather than failure.", l: "el-adc" },
+"ENOB": { d: "Effective Number Of Bits: the resolution a converter actually delivers once its noise and distortion are accounted for, which is always less than its nominal bit count.", l: "el-adc", aka: ["SINAD"] },
+"LDO": { d: "Low Drop-Out regulator: a linear regulator that works with a small input-to-output difference. Quiet, simple, and it dissipates the voltage difference times the current as heat.", l: "el-power" },
+"ESR": { d: "Equivalent Series Resistance: the unwanted resistance in series with a capacitor. It limits how well a decoupling capacitor can supply a fast current transient.", l: "el-power" },
+"PSRR": { d: "Power Supply Rejection Ratio: how well a circuit ignores noise on its supply. It falls with frequency, which is why decoupling matters more than a good regulator alone.", l: "el-power" },
+"TVS": { d: "Transient Voltage Suppressor: a diode that clamps a voltage spike to protect what is downstream. The first line of defence on any externally exposed pin.", l: "el-protection" },
+"FET": { d: "Field Effect Transistor. As a switch, what matters is on-resistance, gate charge and how fast the driver can move that charge, because switching losses live in the transition.", l: "el-mosfets", aka: ["MOSFET", "MOSFETs"] },
+"DC": { d: "Direct current, or a signal's zero-frequency component. A DC offset is systematic, so averaging never removes it and only calibration will.", l: "emb-calib" },
+"RF": { d: "Radio Frequency. At RF, wires become transmission lines and layout stops being a convenience and becomes part of the circuit.", l: "el-emc" },
+
+// ---- DSP and maths --------------------------------------------------------
+"SNR": { d: "Signal to Noise Ratio, usually in dB. Averaging N independent samples improves it by the square root of N, which is 3 dB per doubling.", l: "dsp-noise" },
+"FIR": { d: "Finite Impulse Response filter: output depends only on a window of inputs, so it is unconditionally stable and can have exactly linear phase. The cost is more taps for the same selectivity.", l: "dsp-fir-design" },
+"IIR": { d: "Infinite Impulse Response filter: output depends on previous outputs, so it is far cheaper than an FIR for the same selectivity, at the cost of nonlinear phase and possible instability.", l: "dsp-iir-design", aka: ["biquad"] },
+"FFT": { d: "Fast Fourier Transform: an O(N log N) algorithm for the DFT. Its bins smear if your sampling had jitter, which is why sample timing matters upstream of any spectral work.", l: "dsp-spectral", aka: ["DFT"] },
+"CFAR": { d: "Constant False Alarm Rate: a detector whose threshold adapts to the local noise, so the false alarm rate stays fixed as conditions change.", l: "dsp-detection" },
+"LMS": { d: "Least Mean Squares: the simplest adaptive filter update, adjusting coefficients along the instantaneous gradient. Cheap, and its convergence depends on a step size you have to choose.", l: "dsp-adaptive" },
+"ULP": { d: "Unit in the Last Place: the gap between adjacent representable floating point numbers. The natural unit for talking about rounding error, rather than a fixed epsilon.", l: "cm-float" },
+"BFS": { d: "Breadth First Search: explores a graph level by level, so on an unweighted graph the first time it reaches a node is by a shortest path.", l: "cm-graphs", aka: ["DFS"] },
+"MAP": { d: "Maximum A Posteriori: the most probable parameter value given the data and a prior. Maximum likelihood is the special case with a flat prior.", l: "cm-bayes", cs: 1 },
+
+// ---- control --------------------------------------------------------------
+"PID": { d: "Proportional, Integral, Derivative control. The integral term removes steady-state error and is also what needs anti-windup; the derivative term is what amplifies measurement noise.", l: "ct-robust" },
+"LQR": { d: "Linear Quadratic Regulator: an optimal state-feedback gain found by minimising a weighted sum of state error and control effort. The design work is choosing the weights.", l: "ct-lqr" },
+"MPC": { d: "Model Predictive Control: solve a constrained optimisation over a finite horizon each step, apply the first move, repeat. Handles constraints directly, at the cost of solving a problem in real time.", l: "ct-lqr" },
+"EKF": { d: "Extended Kalman Filter: a Kalman filter linearised about the current estimate each step. Works well when the nonlinearity is mild and diverges when it is not.", l: "ct-fusion", aka: ["Kalman filter", "UKF"] },
+
+// ---- robotics -------------------------------------------------------------
+"ROS": { d: "Robot Operating System: not an OS but a middleware of nodes, topics and messages. ROS 2 replaces the central master with DDS discovery and adds quality-of-service settings.", l: "rob-ros", aka: ["ROS 2"] },
+"IMU": { d: "Inertial Measurement Unit: accelerometers plus gyroscopes, sometimes a magnetometer. Gyros drift and accelerometers are noisy but bounded, which is exactly why the two are fused.", l: "rob-estimation" },
+"DOF": { d: "Degrees Of Freedom: the number of independent motions a mechanism has. Six is the minimum to reach an arbitrary position and orientation in space.", l: "rob-kinematics" },
+"IK": { d: "Inverse Kinematics: solving for joint angles that achieve a desired end-effector pose. Generally has multiple solutions, or none, unlike forward kinematics.", l: "rob-kinematics", aka: ["forward kinematics"] },
+"RRT": { d: "Rapidly-exploring Random Tree: a sampling-based motion planner that grows a tree toward random points. Finds a path in high-dimensional spaces where grid search cannot.", l: "rob-planning" },
+"CAN": { d: "Controller Area Network: a differential two-wire bus with priority arbitration by identifier, so the highest priority message wins without any node backing off. Standard in vehicles and increasingly in robots.", l: "rob-comms" },
+"BLDC": { d: "Brushless DC motor: commutated electronically rather than by brushes, which needs rotor position from Hall sensors, an encoder, or estimated back-EMF.", l: "rob-actuators" },
+"VO": { d: "Visual Odometry: estimating motion by tracking features between camera frames. Drifts without loop closure, which is the difference between odometry and SLAM.", l: "rob-vo", aka: ["SLAM"] },
+
+// ---- RTL and FPGA ---------------------------------------------------------
+"RTL": { d: "Register Transfer Level: describing hardware as registers and the combinational logic between them, which is the abstraction synthesis actually understands.", l: "rtl-synth" },
+"FPGA": { d: "Field Programmable Gate Array: a fabric of lookup tables, flip-flops, block RAM and DSP slices configured by a bitstream. Genuinely parallel, which is what distinguishes it from a fast CPU.", l: "rtl-fpga" },
+"LUT": { d: "Look-Up Table: the FPGA's basic combinational element, a small truth table typically of four to six inputs. Logic utilisation is counted in these.", l: "rtl-fpga" },
+"BRAM": { d: "Block RAM: dedicated memory blocks in the FPGA fabric, far more efficient than building storage out of flip-flops. Inferring them correctly depends on writing the access pattern the tool recognises.", l: "rtl-fpga" },
+"CDC": { d: "Clock Domain Crossing: passing a signal between two unrelated clocks, where setup and hold cannot both be guaranteed and metastability becomes possible. Needs a synchroniser, or a FIFO for buses.", l: "rtl-cdc", aka: ["metastability"] },
+"FIFO": { d: "First In First Out buffer. In hardware it is also the standard way to cross clock domains for multi-bit data, since a two-flop synchroniser only works for single bits.", l: "rtl-fifo" },
+"AXI": { d: "ARM's on-chip bus family. AXI-Stream is the simple point-to-point version with a valid/ready handshake; full AXI adds addressing and independent read and write channels.", l: "rtl-axi", aka: ["AXI-Stream"] },
+"DUT": { d: "Device Under Test: the module a testbench instantiates and drives. The name is worth knowing because it appears in every verification discussion.", l: "rtl-verif", aka: ["testbench"] },
+"VHDL": { d: "The other main hardware description language. More verbose and more strongly typed than Verilog, and still dominant in aerospace and European industry.", l: "rtl-verilog", aka: ["Verilog", "SystemVerilog"] },
+
+// ---- acoustics and NDT ----------------------------------------------------
+"PRF": { d: "Pulse Repetition Frequency: how often a pulse-echo system fires. Too high and echoes from one pulse arrive during the next, which appears as wrap-around artefacts.", l: "ac-measurement" },
+"NDT": { d: "Non-Destructive Testing: inspecting a part without damaging it. The commercial reason most industrial ultrasound exists.", l: "ac-measurement", aka: ["NDE"] },
+"TFM": { d: "Total Focusing Method: capture every transmit-receive element pair, then focus computationally at every pixel afterwards. Better images than fixed delay laws, at a much higher data and compute cost.", l: "ac-imaging", aka: ["FMC"] },
+"PZT": { d: "Lead zirconate titanate, the standard piezoelectric ceramic. High coupling and high acoustic impedance, which is why matching layers exist.", l: "ac-transducers", aka: ["PVDF"] },
+"SPL": { d: "Sound Pressure Level in dB, referenced to 20 micropascals in air. The reference differs in water, which is why underwater and airborne figures cannot be compared directly.", l: "ac-safety", aka: ["MI"] },
+
+// ---- software process -----------------------------------------------------
+"CI": { d: "Continuous Integration: building and testing every commit on a clean machine. What proves the build does not depend on one engineer's local state.", l: "emb-build", aka: ["continuous integration"] },
+"API": { d: "The interface a module presents to its callers. Designing it from the caller's side, by writing the imaginary call site first, is what stops you inventing error codes nobody checks.", l: "emb-errors" },
+"RAII": { d: "Resource Acquisition Is Initialisation: tying a resource's lifetime to an object's scope so cleanup is automatic. C has no equivalent, which is why C uses goto-based unwinding instead.", l: "cpp-classes" },
+"RAM": { d: "Volatile memory: writable and lost at power-off. That combination is why initialised globals cost both flash and RAM, and why deep sleep loses everything outside a retention region.", l: "emb-memory" },
+"CPU": { d: "The processor core. Worth distinguishing from a DMA controller, which is a separate bus master and therefore not stopped by disabling interrupts.", l: "emb-cm-model" },
+"ARM": { d: "The architecture family Cortex-M belongs to. Its calling convention, that R0 to R3 carry arguments and are caller-saved, is what makes a plain C function a legal interrupt handler.", l: "emb-cm-model" },
+
 // ---- compiler and linker flags --------------------------------------------
 "-O0": { d: "No optimisation. Code maps line-for-line to the source, so debugging is easy, but missing <code>volatile</code> and undefined behaviour are both invisible here. That is why a bug can appear only when you turn optimisation on.", l: "emb-build" },
 "-O1": { d: "Light optimisation. Rarely used deliberately: -Og is the better development setting and -O2 or -Os the better release setting.", l: "emb-build" },

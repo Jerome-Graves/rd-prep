@@ -392,6 +392,18 @@
         }
         function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
+        // Options are shuffled on every render. Without this the correct answer sits
+        // at a fixed index, and across a whole bank that index is not uniform, so
+        // you can learn position instead of content.
+        function shuffleOptions(item) {
+            const idx = item.o.map((_, i) => i);
+            for (let i = idx.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const t = idx[i]; idx[i] = idx[j]; idx[j] = t;
+            }
+            return { o: idx.map(i => item.o[i]), a: idx.indexOf(item.a) };
+        }
+
         // ---------- glossary tooltips ----------
         // Terms from glossary.js are found in rendered prose, underlined, and given a
         // tooltip. Matching is done on text nodes only, and never inside code, links or
@@ -437,7 +449,15 @@
             let n;
             while ((n = walker.nextNode())) nodes.push(n);
 
+            // A term is marked once per block, not once per page. Marking only the
+            // first occurrence in a long lesson leaves it unhoverable everywhere
+            // else; marking every occurrence is a sea of dashes.
+            const BLOCK = "p,li,td,th,dt,dd,blockquote,figcaption,h1,h2,h3,h4";
+            let lastBlock = null;
+
             nodes.forEach(node => {
+                const block = (node.parentElement && node.parentElement.closest(BLOCK)) || root;
+                if (block !== lastBlock) { seen.clear(); lastBlock = block; }
                 GLOSS_RE.lastIndex = 0;
                 const text = node.nodeValue;
                 let m, last = 0, frag = null;
@@ -650,9 +670,13 @@
             document.getElementById("main").innerHTML = h;
             renderLessonQuiz(l);
             document.getElementById("completeBtn").addEventListener("click", function () {
-                state.done[id] = !state.done[id];
+                const nowDone = !state.done[id];
+                state.done[id] = nowDone;
                 saveState(state);
-                renderLesson(id);
+                // marking complete carries you on to the next lesson;
+                // un-marking is a correction, so it stays put
+                if (nowDone && next) location.hash = "#lesson/" + next.id;
+                else renderLesson(id);
             });
             annotateGlossary(document.getElementById("main"));
             window.scrollTo(0, 0);
@@ -662,10 +686,11 @@
             const holder = document.getElementById("quiz");
             let score = 0, answered = 0;
             l.quiz.forEach((item, qi) => {
+                const sh = shuffleOptions(item);
                 const card = document.createElement("div");
                 card.className = "card";
                 card.innerHTML = '<div class="qq">' + (qi + 1) + '. ' + item.q + '</div>';
-                item.o.forEach((optText, oi) => {
+                sh.o.forEach((optText, oi) => {
                     const b = document.createElement("button");
                     b.className = "opt";
                     b.innerHTML = optText;
@@ -674,9 +699,9 @@
                         const opts = card.querySelectorAll(".opt");
                         opts.forEach((x, xi) => {
                             x.disabled = true;
-                            if (xi === item.a) x.classList.add("correct");
+                            if (xi === sh.a) x.classList.add("correct");
                         });
-                        if (oi === item.a) { score++; }
+                        if (oi === sh.a) { score++; }
                         else { b.classList.add("wrong"); }
                         card.querySelector(".why").classList.add("show");
                         if (answered === l.quiz.length) {
@@ -767,13 +792,14 @@
                 + '<button class="btn primary" id="nextBtn" style="display:none">Next &rarr;</button></div>';
             document.getElementById("main").innerHTML = h;
             const optsDiv = document.getElementById("opts");
-            item.o.forEach((optText, oi) => {
+            const sh = shuffleOptions(item);
+            sh.o.forEach((optText, oi) => {
                 const b = document.createElement("button");
                 b.className = "opt"; b.innerHTML = optText;
                 b.addEventListener("click", function () {
                     const all = optsDiv.querySelectorAll(".opt");
-                    all.forEach((x, xi) => { x.disabled = true; if (xi === item.a) x.classList.add("correct"); });
-                    const ok = oi === item.a;
+                    all.forEach((x, xi) => { x.disabled = true; if (xi === sh.a) x.classList.add("correct"); });
+                    const ok = oi === sh.a;
                     if (!ok) b.classList.add("wrong"); else test.right++;
                     const pt = test.perTopic[item.t] || { right: 0, n: 0, track: item.track };
                     pt.n++; if (ok) pt.right++;
