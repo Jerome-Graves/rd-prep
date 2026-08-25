@@ -100,6 +100,55 @@
         .figcap { color: var(--muted); font-size: 13px; margin: -6px 0 16px; }
 
         /* code drills: free-response exercises, self-marked */
+        /* line-numbered code with highlightable rows */
+        .codeblk {
+            background: var(--bg-alt); border: 1px solid var(--line); border-radius: 8px;
+            padding: 10px 0; overflow-x: auto; margin: 12px 0;
+            font-family: Consolas, "Cascadia Code", Menlo, monospace;
+            font-size: 13.5px; line-height: 1.6;
+        }
+        .crow { display: flex; padding: 0 14px 0 0; white-space: pre; }
+        .crow .cn {
+            flex: 0 0 3.2em; text-align: right; padding-right: 14px; color: var(--muted);
+            user-select: none; opacity: .7;
+        }
+        .crow .cc { flex: 1; }
+        .crow.hl { background: color-mix(in srgb, var(--bad) 18%, transparent); }
+        .crow.hl .cn { color: var(--bad); opacity: 1; font-weight: 700; }
+        .crow.fixed { background: color-mix(in srgb, var(--good) 16%, transparent); }
+        .crow.fixed .cn { color: var(--good); opacity: 1; font-weight: 700; }
+
+        .bugcard {
+            border: 1px solid var(--line); border-left: 3px solid var(--bad); border-radius: 8px;
+            padding: 12px 14px; margin: 10px 0; background: var(--bg); cursor: pointer;
+        }
+        .bugcard:hover { border-color: var(--accent); border-left-color: var(--bad); }
+        .bugcard.active { border-color: var(--accent); border-left-color: var(--accent);
+            background: var(--bg-alt); }
+        .bugcard .bhead { display: flex; gap: 10px; align-items: baseline; }
+        .bugcard .blines {
+            font-family: Consolas, "Cascadia Code", Menlo, monospace; font-size: 12px;
+            font-weight: 700; color: var(--bad); white-space: nowrap;
+        }
+        .bugcard .btitle { font-weight: 600; flex: 1; }
+        .bugcard .bwhy { color: var(--muted); font-size: 14px; margin-top: 6px; line-height: 1.55; }
+        .bugcard .bfix { display: none; margin-top: 10px; }
+        .bugcard.active .bfix { display: block; }
+        .fixlabel {
+            font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+            margin: 8px 0 3px;
+        }
+        .fixlabel.was { color: var(--bad); }
+        .fixlabel.now { color: var(--good); }
+        .snip {
+            font-family: Consolas, "Cascadia Code", Menlo, monospace; font-size: 12.5px;
+            line-height: 1.55; white-space: pre; overflow-x: auto;
+            border-radius: 6px; padding: 8px 11px; border: 1px solid var(--line);
+        }
+        .snip.was { background: color-mix(in srgb, var(--bad) 10%, var(--bg)); }
+        .snip.now { background: color-mix(in srgb, var(--good) 10%, var(--bg)); }
+        .bughint { color: var(--muted); font-size: 13px; margin: 4px 0 10px; }
+
         .tresult {
             display: flex; gap: 10px; align-items: flex-start; padding: 7px 11px; margin: 4px 0;
             border-radius: 7px; border: 1px solid var(--line); background: var(--bg); font-size: 14px;
@@ -358,6 +407,7 @@
     <script src="crun.js"></script>
     <script src="drilltests.js"></script>
     <script src="drilltests2.js"></script>
+    <script src="drillbugs.js"></script>
     <script>
         // ---------- state ----------
         const KEY = "rdprep-v1";
@@ -1012,7 +1062,16 @@
                 + (st.marked ? ' &middot; <span class="scorechip">last: ' + st.score + '/' + st.of + '</span>' : '')
                 + '</div>'
                 + '<div class="body">' + d.brief + '</div>'
-                + (d.code ? '<pre>' + d.code + '</pre>' : '')
+                + (d.code
+                    ? (d.bugs && d.bugs.length
+                        ? '<div class="codeblk" id="codeblk">'
+                          + d.code.split("\n").map((ln, i) =>
+                              '<div class="crow" data-line="' + (i + 1) + '">'
+                              + '<span class="cn">' + (i + 1) + '</span>'
+                              + '<span class="cc">' + (ln || " ") + '</span></div>').join("")
+                          + '</div>'
+                        : '<pre>' + d.code + '</pre>')
+                    : '')
                 + '<h2>' + (d.kind === "spot" ? "What is wrong with it?" : "Your implementation") + '</h2>'
                 + '<textarea class="drill-answer" id="ans" spellcheck="false" placeholder="'
                 + (d.kind === "spot"
@@ -1024,7 +1083,14 @@
                 + (d.testSig ? '<p class="muted" style="font-size:13px;margin-top:8px">'
                     + 'The tests expect: ' + esc(d.testSig) + '</p>' : '')
                 + '<div class="checkout" id="checkout"></div>'
-                + '<div class="model" id="model"><h2>Model answer</h2>'
+                + '<div class="model" id="model">'
+                + (d.bugs && d.bugs.length
+                    ? '<h2>The bugs, line by line</h2>'
+                      + '<p class="bughint">Click a bug to highlight its lines in the code above '
+                      + 'and see the corrected version.</p>'
+                      + '<div id="bugs"></div>'
+                    : '')
+                + '<h2>Full explanation</h2>'
                 + '<div class="body">' + d.answer + '</div>'
                 + '<h2>Mark yourself</h2>'
                 + '<p class="muted">Tick everything your answer genuinely covered. Be strict: '
@@ -1201,6 +1267,43 @@
             document.getElementById("revealBtn").addEventListener("click", function () {
                 document.getElementById("model").classList.add("show");
                 this.style.display = "none";
+
+                if (d.bugs && d.bugs.length) {
+                    const holder = document.getElementById("bugs");
+                    d.bugs.forEach((bug, bi) => {
+                        const card = document.createElement("div");
+                        card.className = "bugcard";
+                        const range = bug.lines.length > 1
+                            ? "lines " + bug.lines[0] + "-" + bug.lines[bug.lines.length - 1]
+                            : "line " + bug.lines[0];
+                        card.innerHTML =
+                            '<div class="bhead"><span class="blines">' + range + '</span>'
+                            + '<span class="btitle">' + bug.t + '</span></div>'
+                            + '<div class="bwhy">' + bug.why + '</div>'
+                            + '<div class="bfix">'
+                            + (bug.bad ? '<div class="fixlabel was">As written</div>'
+                                       + '<div class="snip was">' + bug.bad + '</div>' : '')
+                            + (bug.fix ? '<div class="fixlabel now">Corrected</div>'
+                                       + '<div class="snip now">' + bug.fix + '</div>' : '')
+                            + '</div>';
+                        card.addEventListener("click", function () {
+                            const already = card.classList.contains("active");
+                            holder.querySelectorAll(".bugcard").forEach(c => c.classList.remove("active"));
+                            document.querySelectorAll("#codeblk .crow")
+                                .forEach(r => r.classList.remove("hl"));
+                            if (already) return;                 // clicking again clears it
+                            card.classList.add("active");
+                            bug.lines.forEach(n => {
+                                const row = document.querySelector('#codeblk .crow[data-line="' + n + '"]');
+                                if (row) row.classList.add("hl");
+                            });
+                            const first = document.querySelector('#codeblk .crow[data-line="' + bug.lines[0] + '"]');
+                            if (first) first.scrollIntoView({ block: "center", behavior: "smooth" });
+                        });
+                        holder.appendChild(card);
+                    });
+                }
+
                 annotateGlossary(document.getElementById("model"));
                 tally();
             });
