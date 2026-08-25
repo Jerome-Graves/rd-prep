@@ -420,6 +420,8 @@
                     if (!n.nodeValue || n.nodeValue.length < 2) return NodeFilter.FILTER_REJECT;
                     for (let p = n.parentNode; p && p !== root; p = p.parentNode) {
                         if (GLOSS_SKIP[p.nodeName]) return NodeFilter.FILTER_REJECT;
+                        // never touch SVG: an HTML <span> inside <text> simply does not render
+                        if (p.namespaceURI === "http://www.w3.org/2000/svg") return NodeFilter.FILTER_REJECT;
                         if (p.classList && p.classList.contains("gloss")) return NodeFilter.FILTER_REJECT;
                     }
                     return NodeFilter.FILTER_ACCEPT;

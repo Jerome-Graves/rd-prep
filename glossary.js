@@ -103,7 +103,25 @@ const GLOSSARY = {
 "HMAC": { d: "A keyed hash. Unlike a CRC it cannot be recomputed without the secret, so it detects deliberate tampering as well as accidental corruption.", l: "emb-serial" },
 
 // ---- drivers, testing and process -----------------------------------------
+"HAL": { d: "Hardware Abstraction Layer: the vendor's C API over the peripheral registers, such as <code>HAL_I2C_Master_Transmit</code>. Convenient, but calling it from a device driver welds that driver to one vendor's silicon and kills off-target testing.", l: "emb-drivers", aka: ["vendor HAL", "vendor SDK"] },
+"GPIO": { d: "General Purpose Input/Output: a pin your firmware controls directly. Toggling a spare one is the cheapest accurate way to time a section of code on a scope.", l: "emb-buses" },
+"FPU": { d: "Floating Point Unit. Where one exists, floats are usually the simpler choice. Using it inside an interrupt handler may require saving and restoring its context, which adds cycles to every such interrupt.", l: "emb-fixedpoint" },
+
+// ---- bus signal names ------------------------------------------------------
+"SDA": { d: "Serial Data: the I2C data line. Open-drain, so devices only pull it low and a pull-up returns it high. It may only change while SCL is low, except for START and STOP.", l: "emb-buses" },
+"SCL": { d: "Serial Clock: the I2C clock line, driven by the master. A slave may hold it low to stall the master, which is clock stretching.", l: "emb-buses" },
+"MOSI": { d: "Master Out, Slave In: the SPI line the master drives. It goes idle during a read phase because the master has nothing left to send, which is correct behaviour rather than a fault.", l: "emb-buses" },
+"MISO": { d: "Master In, Slave Out: the SPI line the addressed slave drives. Reading all 0xFF means nothing is driving it at all.", l: "emb-buses" },
+"chip select": { d: "The SPI line that picks which device is being addressed. It must be asserted before the first clock edge and held for the whole transfer, and it is why SPI needs no address byte.", l: "emb-buses", aka: ["chip selects"] },
+"SPI": { d: "A four-wire full duplex bus: clock, MOSI, MISO and a chip select per device. No addressing and no acknowledgement, so the bus never tells you a device is absent.", l: "emb-buses" },
+"UART": { d: "An asynchronous serial link with no clock line. Both ends agree a bit rate and the receiver samples the middle of each bit, which is why total timing error must stay within about 2 to 3 per cent.", l: "emb-buses" },
+"STOP condition": { d: "On I2C, SDA rising while SCL is high. It ends the transaction and releases the bus. A slave holding SDA low makes it impossible to generate, which is why a stuck bus needs clocking out.", l: "emb-buses" },
+"RC time constant": { d: "Resistance times capacitance, setting how fast a passively pulled line rises. It is why I2C rise time depends on the pull-up value and the bus capacitance, and why released edges curve while driven edges are sharp.", l: "emb-buses", aka: ["RC"] },
+
 "injected transport": { d: "Passing a driver a small struct of function pointers (read, write, delay) plus an opaque context, instead of letting it call the vendor HAL. This is what makes it testable on a host.", l: "emb-drivers", aka: ["dependency injection", "transport struct"] },
+"ctx": { d: "Short for context. A <code>void *</code> the caller supplies and the driver hands back untouched on every call, never looking inside it. It is how a callback finds its own data, and without it an adapter needs a global and can only ever serve one device.", l: "emb-drivers", aka: ["context pointer", "user pointer", "user data"] },
+"handle": { d: "A token standing for something a library owns. You get it from a create function, pass it back to every other call, and return it at destroy. You never look inside: like a cloakroom ticket, it is not the coat.", l: "emb-drivers", aka: ["handles"] },
+"config struct": { d: "A struct you fill in and pass to a create function. Beats a long parameter list because fields are named at the call site, unset fields default to zero, and adding one later does not break existing callers.", l: "emb-drivers", aka: ["configuration struct"] },
 "test double": { d: "Any stand-in for a real dependency in a test. The four kinds are stub (fixed answers), spy (records calls), fake (simplified working version) and mock (records and asserts expectations).", l: "emb-testing", aka: ["test doubles", "doubles"] },
 "HIL": { d: "Hardware In the Loop: a PC driving the target plus programmable instruments over their comms ports, so scenarios run repeatably and produce a report.", l: "emb-hil", aka: ["hardware in the loop"] },
 "TDD": { d: "Test Driven Development: write a failing test, make it pass, refactor. The red step matters because a test that has never failed may assert nothing at all.", l: "emb-testing" },

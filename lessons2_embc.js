@@ -545,6 +545,69 @@ not a fault.</li>
 <h3>UART</h3>
 <p>No clock. Both ends agree a bit rate and the receiver samples in the middle of each
 bit, which is why accuracy matters.</p>
+
+<svg class="fig" viewBox="0 0 680 374" role="img" aria-label="UART frame timing showing the start bit, eight data bits least significant first, and the stop bit, with the receiver sampling points">
+<rect class="bxa" x="40" y="56" width="190" height="48" rx="4"/>
+<text class="th" x="56" y="78">The falling edge</text>
+<text class="ts" x="56" y="96">wakes the receiver</text>
+<rect class="bx" x="245" y="56" width="195" height="48" rx="4"/>
+<text class="th" x="261" y="78">No clock line</text>
+<text class="ts" x="261" y="96">receiver times it itself</text>
+<rect class="bxa" x="460" y="56" width="180" height="48" rx="4"/>
+<text class="th" x="476" y="78">STOP bit</text>
+<text class="ts" x="476" y="96">returns the line high</text>
+<line class="guide" x1="150" y1="104" x2="150" y2="166"/>
+<line class="guide" x1="587" y1="104" x2="587" y2="166"/>
+<rect class="bx" x="40" y="182" width="54" height="36" rx="4"/>
+<text class="th" x="50" y="205">TX</text>
+<line class="guide" x1="173" y1="166" x2="173" y2="240"/>
+<line class="guide" x1="219" y1="166" x2="219" y2="240"/>
+<line class="guide" x1="265" y1="166" x2="265" y2="240"/>
+<line class="guide" x1="311" y1="166" x2="311" y2="240"/>
+<line class="guide" x1="357" y1="166" x2="357" y2="240"/>
+<line class="guide" x1="403" y1="166" x2="403" y2="240"/>
+<line class="guide" x1="449" y1="166" x2="449" y2="240"/>
+<line class="guide" x1="495" y1="166" x2="495" y2="240"/>
+<line class="guide" x1="541" y1="166" x2="541" y2="240"/>
+<path class="wave" d="M110 180 L150 180 L150 220 L196 220 L196 180 L242 180 L242 220 L472 220 L472 180 L518 180 L518 220 L564 220 L564 180 L640 180"/>
+<text class="ts" x="173" y="258" text-anchor="middle">start</text>
+<text class="ts" x="219" y="258" text-anchor="middle">D0</text>
+<text class="ts" x="265" y="258" text-anchor="middle">D1</text>
+<text class="ts" x="311" y="258" text-anchor="middle">D2</text>
+<text class="ts" x="357" y="258" text-anchor="middle">D3</text>
+<text class="ts" x="403" y="258" text-anchor="middle">D4</text>
+<text class="ts" x="449" y="258" text-anchor="middle">D5</text>
+<text class="ts" x="495" y="258" text-anchor="middle">D6</text>
+<text class="ts" x="541" y="258" text-anchor="middle">D7</text>
+<text class="ts" x="587" y="258" text-anchor="middle">stop</text>
+<text class="th" x="219" y="278" text-anchor="middle">1</text>
+<text class="th" x="265" y="278" text-anchor="middle">0</text>
+<text class="th" x="311" y="278" text-anchor="middle">0</text>
+<text class="th" x="357" y="278" text-anchor="middle">0</text>
+<text class="th" x="403" y="278" text-anchor="middle">0</text>
+<text class="th" x="449" y="278" text-anchor="middle">0</text>
+<text class="th" x="495" y="278" text-anchor="middle">1</text>
+<text class="th" x="541" y="278" text-anchor="middle">0</text>
+<rect class="bx" x="40" y="300" width="195" height="54" rx="4"/>
+<text class="th" x="56" y="322">LSB first</text>
+<text class="ts" x="56" y="340">0x41 sends as 10000010</text>
+<rect class="bx" x="250" y="300" width="195" height="54" rx="4"/>
+<text class="th" x="266" y="322">Sampled mid-bit</text>
+<text class="ts" x="266" y="340">dashed lines mark where</text>
+<rect class="bx" x="460" y="300" width="180" height="54" rx="4"/>
+<text class="th" x="476" y="322">Timing budget</text>
+<text class="ts" x="476" y="340">about 2 to 3 per cent</text>
+</svg>
+<p class="figcap">One frame carrying 0x41, the letter A. Read the value row left to right
+and you get 10000010, which is 0x41 backwards, because the least significant bit goes out
+first. The line idles high, so the start bit exists purely to create a falling edge the
+receiver can trigger on.</p>
+
+<p><b>Why the tolerance is so tight.</b> The receiver resynchronises once, on that falling
+edge, then free-runs. Every dashed line above is timed from that single instant, so any
+error in either end's bit rate accumulates across the frame. By D7 the sampling point has
+drifted nine and a half bit times' worth, which is why a couple of per cent is the whole
+budget and why the last data bits corrupt first.</p>
 <ul>
 <li>Frame: start bit low, data bits <b>least significant first</b>, optional parity, stop
 bit high.</li>
