@@ -97,6 +97,9 @@
         svg.fig .bxa { fill: var(--bg-alt); stroke: var(--accent); stroke-width: 1; }
         svg.fig .wave { fill: none; stroke: var(--text); stroke-width: 1.6; stroke-linejoin: round; }
         svg.fig .guide { stroke: var(--muted); stroke-width: 0.6; stroke-dasharray: 4 4; }
+        /* the shared #arrow marker fills with currentColor, so set color here
+           and the head matches the line in both themes */
+        svg.fig .arr { stroke: var(--muted); stroke-width: 1.4; fill: none; color: var(--muted); }
         .figcap { color: var(--muted); font-size: 13px; margin: -6px 0 16px; }
 
         /* code drills: free-response exercises, self-marked */
@@ -345,6 +348,17 @@
 </head>
 
 <body>
+    <!-- shared arrowhead for every lesson figure. A marker only resolves inside
+         the document, so defining it once here lets any svg.fig reference
+         url(#arrow) without repeating the defs block. -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+        <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+            </marker>
+        </defs>
+    </svg>
     <header>
         <a class="brand" href="#home">R&amp;D Prep</a>
         <span class="muted" style="font-size:13px">interview refresher</span>
@@ -383,6 +397,7 @@
     <script src="lessons7_embc.js"></script>
     <script src="lessons8_embc.js"></script>
     <script src="lessons9_embc.js"></script>
+    <script src="lessons10_embc.js"></script>
     <script>const BANKS = {};</script>
     <script src="bank_cpp.js"></script>
     <script src="bank_dsp.js"></script>
@@ -400,6 +415,7 @@
     <script src="bank_embc6.js"></script>
     <script src="bank_embc7.js"></script>
     <script src="bank_embc8.js"></script>
+    <script src="bank_embc9.js"></script>
     <script src="bank_embc_code.js"></script>
     <script src="glossary.js"></script>
     <script>const DRILLS = [];</script>
