@@ -678,7 +678,7 @@ themselves CRC-16:</p>
 <li><b>Width</b>, 8, 16 or 32</li>
 <li><b>Polynomial</b>, and whether it is written in normal or reversed form</li>
 <li><b>Init</b> value, commonly 0x0000 or 0xFFFF</li>
-<li><b>Reflection</b> of input bytes, of the output, or both</li>
+<li><b>Bit reflection</b> of input bytes, of the output, or both</li>
 <li><b>Final XOR</b> applied to the result</li>
 <li><b>Coverage</b>: exactly which bytes are included. Header? Length field? Start delimiter?</li>
 </ul>

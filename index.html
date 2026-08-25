@@ -250,6 +250,7 @@
     <script src="lessons3_embc.js"></script>
     <script src="lessons4_embc.js"></script>
     <script src="lessons5_embc.js"></script>
+    <script src="lessons6_embc.js"></script>
     <script>const BANKS = {};</script>
     <script src="bank_cpp.js"></script>
     <script src="bank_dsp.js"></script>
@@ -263,6 +264,7 @@
     <script src="bank_embc2.js"></script>
     <script src="bank_embc3.js"></script>
     <script src="bank_embc4.js"></script>
+    <script src="bank_embc5.js"></script>
     <script src="bank_embc_code.js"></script>
     <script src="glossary.js"></script>
     <script>
@@ -440,6 +442,10 @@
                 while ((m = GLOSS_RE.exec(text)) !== null) {
                     const key = GLOSS_LOOKUP[m[1].toLowerCase()];
                     if (!key || seen.has(key)) continue;
+                    // terms marked cs are acronyms that collide with ordinary words
+                    // (FIRST), so they only match when the case is exact
+                    if (GLOSSARY[key].cs && key !== m[1]
+                        && !(GLOSSARY[key].aka || []).includes(m[1])) continue;
                     seen.add(key);
                     if (!frag) frag = document.createDocumentFragment();
                     if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
