@@ -382,6 +382,7 @@
     <script src="lessons6_embc.js"></script>
     <script src="lessons7_embc.js"></script>
     <script src="lessons8_embc.js"></script>
+    <script src="lessons9_embc.js"></script>
     <script>const BANKS = {};</script>
     <script src="bank_cpp.js"></script>
     <script src="bank_dsp.js"></script>
@@ -398,6 +399,7 @@
     <script src="bank_embc5.js"></script>
     <script src="bank_embc6.js"></script>
     <script src="bank_embc7.js"></script>
+    <script src="bank_embc8.js"></script>
     <script src="bank_embc_code.js"></script>
     <script src="glossary.js"></script>
     <script>const DRILLS = [];</script>
@@ -1293,12 +1295,12 @@
                                 .forEach(r => r.classList.remove("hl"));
                             if (already) return;                 // clicking again clears it
                             card.classList.add("active");
+                            // highlight only: do NOT scroll the page back up to the
+                            // code, because you are reading the card down here
                             bug.lines.forEach(n => {
                                 const row = document.querySelector('#codeblk .crow[data-line="' + n + '"]');
                                 if (row) row.classList.add("hl");
                             });
-                            const first = document.querySelector('#codeblk .crow[data-line="' + bug.lines[0] + '"]');
-                            if (first) first.scrollIntoView({ block: "center", behavior: "smooth" });
                         });
                         holder.appendChild(card);
                     });
