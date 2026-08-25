@@ -100,6 +100,22 @@
         .figcap { color: var(--muted); font-size: 13px; margin: -6px 0 16px; }
 
         /* code drills: free-response exercises, self-marked */
+        .checkout { margin: 12px 0 0; display: none; }
+        .checkout.show { display: block; }
+        .diag {
+            display: flex; gap: 10px; align-items: flex-start; padding: 8px 11px; margin: 5px 0;
+            border-radius: 7px; border: 1px solid var(--line); background: var(--bg);
+            font-size: 14px; line-height: 1.5;
+        }
+        .diag.err  { border-color: var(--bad);    background: color-mix(in srgb, var(--bad) 10%, var(--bg)); }
+        .diag.warn { border-color: #b8860b;       background: color-mix(in srgb, #b8860b 10%, var(--bg)); }
+        .diag.good { border-color: var(--good);   background: color-mix(in srgb, var(--good) 10%, var(--bg)); }
+        .diag .ln {
+            font-family: Consolas, "Cascadia Code", Menlo, monospace; font-size: 12.5px;
+            color: var(--muted); white-space: nowrap; min-width: 58px;
+        }
+        .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+
         .drill-kind {
             display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .08em;
             text-transform: uppercase; border-radius: 4px; padding: 2px 7px; margin-right: 8px;
@@ -319,6 +335,7 @@
     <script>const DRILLS = [];</script>
     <script src="drills_embc.js"></script>
     <script src="drills2_embc.js"></script>
+    <script src="ccheck.js"></script>
     <script>
         // ---------- state ----------
         const KEY = "rdprep-v1";
@@ -979,8 +996,9 @@
                 + (d.kind === "spot"
                     ? "List every fault you can find, and say why each one matters."
                     : "Write it here. Include the error handling.") + '"></textarea>'
-                + '<p style="margin-top:12px"><button class="btn primary" id="revealBtn">'
-                + 'Reveal model answer</button></p>'
+                + '<div class="btnrow"><button class="btn" id="checkBtn">Check my code</button>'
+                + '<button class="btn primary" id="revealBtn">Reveal model answer</button></div>'
+                + '<div class="checkout" id="checkout"></div>'
                 + '<div class="model" id="model"><h2>Model answer</h2>'
                 + '<div class="body">' + d.answer + '</div>'
                 + '<h2>Mark yourself</h2>'
@@ -1017,6 +1035,52 @@
                 state.drills[d.id] = cur; saveState(state);
             }
             checks.querySelectorAll("input").forEach(b => b.addEventListener("change", tally));
+
+            document.getElementById("checkBtn").addEventListener("click", function () {
+                const out = document.getElementById("checkout");
+                const src = ta.value;
+                let h = "";
+
+                if (!src.trim()) {
+                    h = '<div class="diag warn"><span class="ln">&mdash;</span>'
+                      + '<span>Nothing to check yet. Write something first.</span></div>';
+                    out.innerHTML = h; out.classList.add("show"); return;
+                }
+
+                const r = checkC(src);
+
+                r.errors.forEach(e => {
+                    h += '<div class="diag err"><span class="ln">line ' + e.line + '</span><span>'
+                       + esc(e.msg) + '</span></div>';
+                });
+                r.warnings.forEach(w => {
+                    h += '<div class="diag warn"><span class="ln">line ' + w.line + '</span><span>'
+                       + esc(w.msg) + '</span></div>';
+                });
+                if (!r.errors.length && !r.warnings.length) {
+                    h += '<div class="diag good"><span class="ln">syntax</span><span>'
+                       + 'Delimiters balanced, literals closed, nothing suspicious found. '
+                       + 'That is not the same as correct: it is a syntax check, not a compiler.'
+                       + '</span></div>';
+                }
+
+                // structure: did the answer contain what the exercise asked for?
+                if (d.expect && d.expect.length) {
+                    const st = checkStructure(src, d.expect);
+                    h += '<h3 style="margin-top:16px">Does it contain what was asked for?</h3>';
+                    st.forEach(x => {
+                        h += '<div class="diag ' + (x.found ? "good" : "warn") + '">'
+                           + '<span class="ln">' + (x.found ? "found" : "missing") + '</span><span>'
+                           + esc(x.want) + (x.hint ? ' &mdash; <span class="muted">' + esc(x.hint) + '</span>' : '')
+                           + '</span></div>';
+                    });
+                    h += '<p class="muted" style="font-size:13px">Presence only. Finding a token is '
+                       + 'not evidence the code around it is right.</p>';
+                }
+
+                out.innerHTML = h;
+                out.classList.add("show");
+            });
 
             document.getElementById("revealBtn").addEventListener("click", function () {
                 document.getElementById("model").classList.add("show");
