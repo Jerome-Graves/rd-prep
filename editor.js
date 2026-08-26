@@ -14,6 +14,8 @@
 //   .refresh()          re-highlight and re-number (call after setting .value)
 //   .mark(diagnostics)  gutter markers plus red squiggles; [{line, col, severity, msg}]
 //   .clearMarks()
+//   .band(lines)        highlight whole lines, used to point a bug card at its code
+//   .clearBands()
 
 (function () {
 
@@ -119,6 +121,10 @@
         const hl = document.createElement("pre");
         hl.className = "ed-hl";
         hl.setAttribute("aria-hidden", "true");
+        const bandLayer = document.createElement("div");
+        bandLayer.className = "ed-bands";
+        const bandInner = document.createElement("div");
+        bandLayer.appendChild(bandInner);
         const sqLayer = document.createElement("div");
         sqLayer.className = "ed-sq";
         const sqInner = document.createElement("div");
@@ -127,6 +133,7 @@
         pop.className = "ed-pop";
 
         ta.parentNode.insertBefore(wrap, ta);
+        code.appendChild(bandLayer);        // behind the text, so it stays readable
         code.appendChild(hl);
         code.appendChild(sqLayer);
         code.appendChild(ta);
@@ -139,7 +146,7 @@
         // which also hides the native placeholder; draw it in the highlight layer
         ta.setAttribute("placeholder", "");
 
-        let markedLines = {}, diags = [], cw = 0;
+        let markedLines = {}, diags = [], cw = 0, banded = [];
 
         // one measurement is enough: the font is monospace
         function charWidth() {
@@ -165,12 +172,21 @@
             let g = "";
             for (let i = 1; i <= n; i++) {
                 const mk = markedLines[i];
-                g += '<div class="ed-n' + (mk ? " " + mk : "") + '">' + i + "</div>";
+                g += '<div class="ed-n' + (mk ? " " + mk : "")
+                   + (banded.indexOf(i) !== -1 ? " band" : "") + '">' + i + "</div>";
             }
             nums.innerHTML = g;
+            drawBands();
             drawSquiggles();
             syncScroll();
             syncActive();
+        }
+
+        // ---- line bands -----------------------------------------------------
+        function drawBands() {
+            bandInner.innerHTML = banded.map(function (n) {
+                return '<i class="ed-band" style="top:' + (PAD_T + (n - 1) * LINE_H) + "px\"></i>";
+            }).join("");
         }
 
         // ---- red squiggles --------------------------------------------------
@@ -208,6 +224,7 @@
             hl.scrollLeft = ta.scrollLeft;
             nums.style.transform = "translateY(" + (-ta.scrollTop) + "px)";
             sqInner.style.transform = "translate(" + (-ta.scrollLeft) + "px," + (-ta.scrollTop) + "px)";
+            bandInner.style.transform = "translateY(" + (-ta.scrollTop) + "px)";
             if (pop.classList.contains("show")) placePopup();
         }
 
@@ -443,6 +460,18 @@
         ta.addEventListener("focus", syncActive);
         ta.addEventListener("blur", hidePopup);
 
+        // scroll the editor itself so a banded line is visible. The page is
+        // deliberately left alone: you are reading the bug card further down.
+        function scrollToLine(n) {
+            if (!n) return;
+            const top = (n - 1) * LINE_H;
+            const view = ta.clientHeight - PAD_T * 2;
+            if (top < ta.scrollTop || top > ta.scrollTop + view - LINE_H) {
+                ta.scrollTop = Math.max(0, top - view / 2);
+                syncScroll();
+            }
+        }
+
         const api = {
             refresh: refresh,
             mark: function (list) {
@@ -454,7 +483,10 @@
                 });
                 refresh();
             },
-            clearMarks: function () { diags = []; markedLines = {}; refresh(); }
+            clearMarks: function () { diags = []; markedLines = {}; refresh(); },
+            band: function (lines) { banded = (lines || []).slice(); refresh(); scrollToLine(banded[0]); },
+            clearBands: function () { banded = []; refresh(); },
+            lineCount: function () { return ta.value.split("\n").length; }
         };
         ta._ed = api;
         refresh();

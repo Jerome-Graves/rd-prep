@@ -210,6 +210,20 @@
         .drill-row:hover { border-color: var(--accent); }
         .drill-row .dtitle { flex: 1; font-weight: 600; }
         .drill-row .dmeta { color: var(--muted); font-size: 13px; white-space: nowrap; }
+        /* the prose answer box. Deliberately NOT monospace: on a spot drill this
+           is where you describe the faults, and the code lives in the editor. */
+        .drill-answer {
+            width: 100%; min-height: 150px; resize: vertical; padding: 12px 14px;
+            border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
+            color: var(--text); font-family: inherit; font-size: 15px; line-height: 1.6;
+        }
+        .drill-answer:focus { outline: none; border-color: var(--accent); }
+        .linkbtn {
+            background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
+            font-size: 12.5px; color: var(--accent); text-decoration: underline;
+            margin-left: auto;
+        }
+        .linkbtn:hover { opacity: 0.75; }
         /* ---- code editor -------------------------------------------------
            A transparent textarea sits exactly on top of a highlighted <pre>.
            Font, size, line-height and padding MUST match between the two or
@@ -267,6 +281,16 @@
         .c-ty  { color: var(--tk-ty); }
         .c-cn  { color: var(--tk-num); }
         .c-fn  { color: var(--text); font-weight: 600; }
+        /* band layer: whole-line highlight behind the text, used when a bug card
+           points at its lines. Scrolls vertically only, so a full-width band
+           stays full width however far the code is scrolled sideways. */
+        .ed-bands { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+        .ed-band {
+            position: absolute; left: 0; right: 0; height: var(--ed-line); display: block;
+            background: color-mix(in srgb, var(--bad) 20%, transparent);
+            box-shadow: inset 2px 0 0 var(--bad);
+        }
+        .ed-n.band { opacity: 1; color: var(--bad); font-weight: 700; }
         /* squiggle layer: absolutely placed by (line, col) because the font is
            monospace, so a single character-width measurement is exact */
         .ed-sq { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
@@ -887,6 +911,15 @@
             return byId[topic] ? topic : null;
         }
 
+        // Drill code is stored HTML-escaped for innerHTML rendering. A textarea
+        // does not decode entities, so decode once on the way in. Using the
+        // browser's own parser handles nesting (&amp;lt; -> &lt;) correctly.
+        function unesc(s) {
+            const t = document.createElement("textarea");
+            t.innerHTML = s;
+            return t.value;
+        }
+
         function lessonRef(topicId, track) {
             const l = byId[topicLesson(topicId, track)];
             if (!l) return "";
@@ -1245,16 +1278,21 @@
                 + '</div>'
                 + '<div class="body">' + d.brief + '</div>'
                 + (d.code
-                    ? (d.bugs && d.bugs.length
-                        ? '<div class="codeblk" id="codeblk">'
-                          + d.code.split("\n").map((ln, i) =>
-                              '<div class="crow" data-line="' + (i + 1) + '">'
-                              + '<span class="cn">' + (i + 1) + '</span>'
-                              + '<span class="cc">' + (ln || " ") + '</span></div>').join("")
+                    ? (d.kind === "spot"
+                        ? '<h2>Fix it</h2>'
+                          + '<p class="muted" style="margin:-6px 0 10px">Correct every fault you '
+                          + 'find, here in the code. Then say what they were, below.</p>'
+                          + '<textarea id="fixcode" spellcheck="false"></textarea>'
+                          + '<div class="ed-help">'
+                          + '<span><kbd>Tab</kbd> indent</span>'
+                          + '<span><kbd>Ctrl</kbd>+<kbd>/</kbd> comment</span>'
+                          + '<span><kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</span>'
+                          + '<span><kbd>Ctrl</kbd>+<kbd>Space</kbd> complete</span>'
+                          + '<button class="linkbtn" id="resetBtn">Reset to the original</button>'
                           + '</div>'
                         : '<pre>' + d.code + '</pre>')
                     : '')
-                + '<h2>' + (d.kind === "spot" ? "What is wrong with it?" : "Your implementation") + '</h2>'
+                + '<h2>' + (d.kind === "spot" ? "What was wrong with it?" : "Your implementation") + '</h2>'
                 + '<textarea class="drill-answer" id="ans" spellcheck="false" placeholder="'
                 + (d.kind === "spot"
                     ? "List every fault you can find, and say why each one matters."
@@ -1265,7 +1303,8 @@
                 + '<span><kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</span>'
                 + '<span><kbd>Ctrl</kbd>+<kbd>Space</kbd> complete</span>'
                 + '<span>brackets and quotes auto-close</span></div>' : '')
-                + '<div class="btnrow"><button class="btn" id="checkBtn">Check my code</button>'
+                + '<div class="btnrow"><button class="btn" id="checkBtn">'
+                + (d.kind === "spot" ? "Check my fix" : "Check my code") + '</button>'
                 + (d.test ? '<button class="btn primary" id="runBtn">Compile and run tests</button>' : '')
                 + '<button class="btn' + (d.test ? '' : ' primary') + '" id="revealBtn">Reveal model answer</button></div>'
                 + (d.testSig ? '<p class="muted" style="font-size:13px;margin-top:8px">'
@@ -1274,8 +1313,9 @@
                 + '<div class="model" id="model">'
                 + (d.bugs && d.bugs.length
                     ? '<h2>The bugs, line by line</h2>'
-                      + '<p class="bughint">Click a bug to highlight its lines in the code above '
-                      + 'and see the corrected version.</p>'
+                      + '<p class="bughint">Click a bug to band its lines in the code above '
+                      + 'and see the corrected version. Line numbers are the original ones, so '
+                      + 'use <b>Reset to the original</b> if your fix has moved them.</p>'
                       + '<div id="bugs"></div>'
                     : '')
                 + '<h2>Full explanation</h2>'
@@ -1300,9 +1340,23 @@
                 let m;
                 while ((m = re.exec(src))) edWords.push(m[0]);
             });
-            const ed = d.kind === "write"
-                ? makeEditor(ta, { words: edWords })
-                : { refresh: function () {}, mark: function () {}, clearMarks: function () {} };
+            // whichever box holds C gets the editor: the answer box on a write
+            // drill, the editable copy of the buggy code on a spot drill
+            const codeEl = d.kind === "spot" ? document.getElementById("fixcode") : ta;
+            // st.fix came back out of the textarea, so it is already decoded
+            if (d.kind === "spot") codeEl.value = st.fix !== undefined ? st.fix : unesc(d.code || "");
+            const ed = makeEditor(codeEl, { words: edWords });
+            if (d.kind === "spot") {
+                codeEl.addEventListener("input", function () {
+                    const cur = state.drills[d.id] || {};
+                    cur.fix = codeEl.value; state.drills[d.id] = cur; saveState(state);
+                });
+                document.getElementById("resetBtn").addEventListener("click", function () {
+                    codeEl.value = unesc(d.code || "");
+                    ed.refresh(); ed.clearMarks(); ed.clearBands();
+                    codeEl.dispatchEvent(new Event("input", { bubbles: true }));
+                });
+            }
             ta.addEventListener("input", function () {
                 const cur = state.drills[d.id] || {};
                 cur.text = ta.value; state.drills[d.id] = cur; saveState(state);
@@ -1329,7 +1383,7 @@
 
             document.getElementById("checkBtn").addEventListener("click", function () {
                 const out = document.getElementById("checkout");
-                const src = ta.value;
+                const src = codeEl.value;
                 let h = "";
 
                 if (!src.trim()) {
@@ -1379,7 +1433,7 @@
                 document.getElementById("runBtn").addEventListener("click", function () {
                     const out = document.getElementById("checkout");
                     const btn = this;
-                    const src = ta.value;
+                    const src = codeEl.value;
 
                     if (!src.trim()) {
                         out.innerHTML = '<div class="diag warn"><span class="ln">&mdash;</span>'
@@ -1496,16 +1550,13 @@
                         card.addEventListener("click", function () {
                             const already = card.classList.contains("active");
                             holder.querySelectorAll(".bugcard").forEach(c => c.classList.remove("active"));
-                            document.querySelectorAll("#codeblk .crow")
-                                .forEach(r => r.classList.remove("hl"));
+                            ed.clearBands();
                             if (already) return;                 // clicking again clears it
                             card.classList.add("active");
-                            // highlight only: do NOT scroll the page back up to the
-                            // code, because you are reading the card down here
-                            bug.lines.forEach(n => {
-                                const row = document.querySelector('#codeblk .crow[data-line="' + n + '"]');
-                                if (row) row.classList.add("hl");
-                            });
+                            // band the lines inside the editor. The editor scrolls
+                            // itself; the page does not move, because you are
+                            // reading the card down here.
+                            ed.band(bug.lines);
                         });
                         holder.appendChild(card);
                     });
