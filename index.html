@@ -202,6 +202,7 @@
         }
         .drill-kind.spot  { color: var(--bad);    border: 1px solid var(--bad); }
         .drill-kind.write { color: var(--accent); border: 1px solid var(--accent); }
+        .drill-kind.pattern { color: var(--tk-pre); border: 1px solid var(--tk-pre); }
         .drill-row {
             display: flex; align-items: center; gap: 10px; padding: 11px 14px; margin: 8px 0;
             border: 1px solid var(--line); border-radius: 9px; background: var(--bg-alt);
@@ -576,6 +577,7 @@
     <script src="drills2_embc.js"></script>
     <script src="drills3_embc.js"></script>
     <script src="drills4_embc.js"></script>
+    <script src="drills5_embc.js"></script>
     <script src="editor.js"></script>
     <script src="ccheck.js"></script>
     <script src="crun.js"></script>
@@ -583,6 +585,7 @@
     <script src="drilltests2.js"></script>
     <script src="drilltests3.js"></script>
     <script src="drilltests4.js"></script>
+    <script src="drilltests5.js"></script>
     <script src="drillbugs.js"></script>
     <script src="drillbugs4.js"></script>
     <script>
@@ -1247,11 +1250,19 @@
             return kind === "all" ? all : all.filter(d => d.kind === kind);
         }
 
+        // three kinds now: read a fault, write a whole thing, or reproduce a
+        // structure from memory
+        function kindLabel(k, sh) {
+            if (k === "spot")    return sh ? "Spot"    : "Spot the bug";
+            if (k === "pattern") return sh ? "Pattern" : "Write it from memory";
+            return sh ? "Write" : "Write the code";
+        }
+
         function renderDrillIndex() {
             renderNav(null, "drills");
             const all = drillsFor("all");
             const done = all.filter(d => state.drills[d.id] && state.drills[d.id].marked).length;
-            const kinds = [["all", "All"], ["spot", "Spot the bug"], ["write", "Write the code"]];
+            const kinds = [["all", "All"], ["pattern", "Patterns"], ["spot", "Spot the bug"], ["write", "Write the code"]];
             let h = '<h1>Code drills</h1>'
                 + '<p class="muted">Write your answer first, then reveal the model answer and mark '
                 + 'yourself against the checklist. ' + done + ' of ' + all.length + ' attempted.</p>'
@@ -1263,7 +1274,7 @@
                 const st = state.drills[d.id];
                 const score = st && st.marked ? st.score + "/" + st.of : "";
                 h += '<a class="drill-row" href="#drill/' + d.id + '">'
-                    + '<span class="drill-kind ' + d.kind + '">' + (d.kind === "spot" ? "Spot" : "Write") + '</span>'
+                    + '<span class="drill-kind ' + d.kind + '">' + kindLabel(d.kind, true) + '</span>'
                     + '<span class="dtitle">' + d.title + '</span>'
                     + '<span class="dmeta">' + (score ? score + " &middot; " : "") + d.mins + ' min</span></a>';
             });
@@ -1283,7 +1294,7 @@
             const idx = all.indexOf(d), next = all[idx + 1];
 
             let h = '<h1><span class="drill-kind ' + d.kind + '">'
-                    + (d.kind === "spot" ? "Spot the bug" : "Write the code") + '</span>' + d.title + '</h1>'
+                    + kindLabel(d.kind, false) + '</span>' + d.title + '</h1>'
                 + '<div class="lesson-meta">' + d.track + ' &middot; about ' + d.mins + ' min'
                 + (st.marked ? ' &middot; <span class="scorechip">last: ' + st.score + '/' + st.of + '</span>' : '')
                 + '</div>'
@@ -1308,7 +1319,7 @@
                 + (d.kind === "spot"
                     ? "List every fault you can find, and say why each one matters."
                     : "Write it here. Include the error handling.") + '"></textarea>'
-                + (d.kind === "write" ? '<div class="ed-help">'
+                + (d.kind !== "spot" ? '<div class="ed-help">'
                 + '<span><kbd>Tab</kbd> indent, <kbd>Shift</kbd>+<kbd>Tab</kbd> dedent</span>'
                 + '<span><kbd>Ctrl</kbd>+<kbd>/</kbd> comment</span>'
                 + '<span><kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</span>'
