@@ -9,6 +9,7 @@ DRILLS.push(
 id: "d-spot-fault",
 kind: "spot",
 track: "Embedded C",
+d: 3,
 title: "A fault handler that tells you nothing",
 mins: 9,
 brief: `<p>The product ships with this. A customer reports it locking up. Explain why this
@@ -69,6 +70,7 @@ checklist: [
 id: "d-spot-dma",
 kind: "spot",
 track: "Embedded C",
+d: 3,
 title: "An ADC to DMA path",
 mins: 10,
 brief: `<p>Reads a block of ADC samples using DMA. It works on a Cortex-M4 and fails
@@ -143,6 +145,7 @@ checklist: [
 id: "d-spot-flash",
 kind: "spot",
 track: "Embedded C",
+d: 3,
 title: "Saving settings to flash",
 mins: 10,
 brief: `<p>Called whenever the user changes a setting, which in practice is a few times a
@@ -218,6 +221,7 @@ checklist: [
 id: "d-spot-boot",
 kind: "spot",
 track: "Embedded C",
+d: 3,
 title: "A bootloader jumping to the application",
 mins: 9,
 brief: `<p>The bootloader validates an image then jumps to it. The application hard faults
@@ -282,6 +286,7 @@ checklist: [
 id: "d-spot-motor",
 kind: "spot",
 track: "Embedded C",
+d: 2,
 title: "A motor speed controller",
 mins: 10,
 brief: `<p>A simple closed-loop speed controller called from a 1 kHz timer interrupt. It
@@ -348,6 +353,7 @@ checklist: [
 id: "d-spot-header",
 kind: "spot",
 track: "Embedded C",
+d: 1,
 title: "A utility header",
 mins: 9,
 brief: `<p>A header included by every file in the project. Find the problems, and say what
@@ -415,6 +421,7 @@ checklist: [
 id: "d-spot-i2c",
 kind: "spot",
 track: "Embedded C",
+d: 1,
 title: "An I2C register read",
 mins: 9,
 brief: `<p>Reads a 16-bit value from a sensor over I2C. The datasheet gives the device's 7-bit
@@ -480,6 +487,7 @@ checklist: [
 id: "d-spot-cal",
 kind: "spot",
 track: "Embedded C",
+d: 2,
 title: "Loading calibration at boot",
 mins: 8,
 brief: `<p>Runs at startup on a measurement instrument. Review it, and pay particular
@@ -554,6 +562,7 @@ checklist: [
 id: "d-write-fault",
 kind: "write",
 track: "Embedded C",
+d: 3,
 title: "A fault handler worth shipping",
 mins: 15,
 brief: `<p>Write a Cortex-M hard fault handler that captures enough to diagnose the fault from
@@ -653,6 +662,7 @@ checklist: [
 id: "d-write-regfield",
 kind: "write",
 track: "Embedded C",
+d: 2,
 title: "Safe register field accessors",
 mins: 12,
 brief: `<p>A peripheral's CTRL register at 0x40004000 has:</p>
@@ -738,6 +748,7 @@ checklist: [
 id: "d-write-nvs",
 kind: "write",
 track: "Embedded C",
+d: 3,
 title: "A settings store that survives power loss",
 mins: 15,
 brief: `<p>Design and write a settings store in one flash sector that:</p>
@@ -853,6 +864,7 @@ checklist: [
 id: "d-write-fake",
 kind: "write",
 track: "Embedded C",
+d: 3,
 title: "A fake transport for driver tests",
 mins: 14,
 brief: `<p>You have a driver taking an injected transport:</p>
@@ -971,6 +983,7 @@ checklist: [
 id: "d-write-scale",
 kind: "write",
 track: "Embedded C",
+d: 1,
 title: "Counts to millivolts, safely",
 mins: 10,
 brief: `<p>Write <code>int32_t adc_to_mv(uint16_t count, uint16_t vref_mv)</code> for a 12-bit
@@ -1034,6 +1047,7 @@ checklist: [
 id: "d-write-mavg",
 kind: "write",
 track: "Embedded C",
+d: 2,
 title: "A moving average that kills mains hum",
 mins: 12,
 brief: `<p>Samples arrive at 1 kHz and carry 50 Hz interference. Write a moving average filter
@@ -1115,6 +1129,7 @@ checklist: [
 id: "d-write-cal2",
 kind: "write",
 track: "Embedded C",
+d: 2,
 title: "Two-point calibration, end to end",
 mins: 14,
 brief: `<p>Write the calibration side of a measurement instrument:</p>
@@ -1231,6 +1246,7 @@ checklist: [
 id: "d-write-sched",
 kind: "write",
 track: "Embedded C",
+d: 3,
 title: "A cooperative scheduler without an RTOS",
 mins: 14,
 brief: `<p>Write a small cooperative scheduler for a bare-metal system with no RTOS.</p>
@@ -1340,6 +1356,7 @@ checklist: [
 id: "d-write-cobs",
 kind: "write",
 track: "Embedded C",
+d: 3,
 title: "Framing that resynchronises by itself",
 mins: 13,
 brief: `<p>A serial link keeps losing sync after corruption and never recovers until a

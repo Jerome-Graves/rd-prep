@@ -11,6 +11,7 @@ DRILLS.push(
 id: "d-spot-isr",
 kind: "spot",
 track: "Embedded C",
+d: 1,
 title: "UART receive interrupt and its buffer",
 mins: 10,
 brief: `<p>This is the receive path of a UART driver. The ISR fills a buffer and a task
@@ -79,6 +80,7 @@ checklist: [
 id: "d-spot-init",
 kind: "spot",
 track: "Embedded C",
+d: 2,
 title: "Driver init and its error paths",
 mins: 10,
 brief: `<p>A device driver's init function. The happy path works. Review it as you would in a
@@ -147,6 +149,7 @@ checklist: [
 id: "d-spot-ring",
 kind: "spot",
 track: "Embedded C",
+d: 2,
 title: "A ring buffer that mostly works",
 mins: 10,
 brief: `<p>A ring buffer used with one producer in an ISR and one consumer in a task.
@@ -212,6 +215,7 @@ checklist: [
 id: "d-spot-regs",
 kind: "spot",
 track: "Embedded C",
+d: 2,
 title: "A register access sequence",
 mins: 8,
 brief: `<p>Peripheral setup code. The datasheet says ICR is write-1-to-clear and SR is
@@ -276,6 +280,7 @@ checklist: [
 id: "d-spot-fixed",
 kind: "spot",
 track: "Embedded C",
+d: 2,
 title: "A scaling and filtering calculation",
 mins: 9,
 brief: `<p>Converting a 12-bit ADC count to millivolts and smoothing it. Values look
@@ -337,6 +342,7 @@ checklist: [
 id: "d-spot-rtos",
 kind: "spot",
 track: "Embedded C",
+d: 2,
 title: "Task setup and shared hardware",
 mins: 9,
 brief: `<p>An RTOS application's startup and one of its tasks. Two sensors on the same I2C
@@ -410,6 +416,7 @@ checklist: [
 id: "d-spot-parse",
 kind: "spot",
 track: "Embedded C",
+d: 3,
 title: "A frame parser",
 mins: 9,
 brief: `<p>Parses a length-prefixed frame out of a receive buffer. Review it. Assume an
@@ -477,6 +484,7 @@ checklist: [
 id: "d-spot-fsm",
 kind: "spot",
 track: "Embedded C",
+d: 2,
 title: "A state machine and a timeout",
 mins: 8,
 brief: `<p>Drives a measurement cycle. It works on the bench and hangs in the field roughly
@@ -547,6 +555,7 @@ checklist: [
 id: "d-write-ring",
 kind: "write",
 track: "Embedded C",
+d: 3,
 title: "Lock-free ring buffer for one ISR and one task",
 mins: 15,
 brief: `<p>Write a byte ring buffer for a single producer in an interrupt and a single
@@ -624,6 +633,7 @@ checklist: [
 id: "d-write-crc",
 kind: "write",
 track: "Embedded C",
+d: 3,
 title: "CRC-16/CCITT and its self-test",
 mins: 12,
 brief: `<p>Write <code>uint16_t crc16_ccitt(const uint8_t *data, size_t len)</code>.</p>
@@ -689,6 +699,7 @@ checklist: [
 id: "d-write-init",
 kind: "write",
 track: "Embedded C",
+d: 3,
 title: "A driver init with clean error handling",
 mins: 15,
 brief: `<p>Write the init function for a sensor driver, given an injected transport.</p>
@@ -808,6 +819,7 @@ checklist: [
 id: "d-write-serial",
 kind: "write",
 track: "Embedded C",
+d: 2,
 title: "Serialise a frame for the wire",
 mins: 12,
 brief: `<p>Write a function that serialises this struct into a byte buffer, little-endian,
@@ -904,6 +916,7 @@ checklist: [
 id: "d-write-ema",
 kind: "write",
 track: "Embedded C",
+d: 2,
 title: "A fixed-point smoothing filter that does not stall",
 mins: 12,
 brief: `<p>Write an exponential moving average in integer arithmetic, with no floating point
@@ -978,6 +991,7 @@ checklist: [
 id: "d-write-debounce",
 kind: "write",
 track: "Embedded C",
+d: 2,
 title: "Debounce a button",
 mins: 10,
 brief: `<p>Write a debounce routine called at a fixed rate from a timer, say every 5 ms.</p>
@@ -1051,6 +1065,7 @@ checklist: [
 id: "d-write-parse",
 kind: "write",
 track: "Embedded C",
+d: 3,
 title: "A byte-at-a-time frame receiver",
 mins: 15,
 brief: `<p>Bytes arrive one at a time from an interrupt. Write a state machine that assembles
@@ -1165,6 +1180,7 @@ checklist: [
 id: "d-write-timeout",
 kind: "write",
 track: "Embedded C",
+d: 2,
 title: "A wait that cannot hang",
 mins: 8,
 brief: `<p>Write a function that waits for a peripheral's READY bit, given a free-running

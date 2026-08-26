@@ -8,6 +8,7 @@ DRILLS.push(
 id: "d-write-strrev",
 kind: "write",
 track: "Embedded C",
+d: 1,
 title: "Reverse a string in place",
 mins: 8,
 brief: `
@@ -60,6 +61,7 @@ checklist: [
 id: "d-write-popcount",
 kind: "write",
 track: "Embedded C",
+d: 1,
 title: "Count the set bits",
 mins: 10,
 brief: `
@@ -119,6 +121,7 @@ checklist: [
 id: "d-write-bswap",
 kind: "write",
 track: "Embedded C",
+d: 1,
 title: "Byte order, both directions",
 mins: 10,
 brief: `
@@ -177,6 +180,7 @@ checklist: [
 id: "d-write-mystr",
 kind: "write",
 track: "Embedded C",
+d: 2,
 title: "strlen, and a copy that is actually safe",
 mins: 12,
 brief: `
@@ -242,6 +246,7 @@ checklist: [
 id: "d-write-parseint",
 kind: "write",
 track: "Embedded C",
+d: 2,
 title: "Parse an integer, and reject what you should",
 mins: 14,
 brief: `
@@ -305,6 +310,7 @@ checklist: [
 id: "d-write-revbits",
 kind: "write",
 track: "Embedded C",
+d: 2,
 title: "Reverse the bits in a word",
 mins: 10,
 brief: `
@@ -365,6 +371,7 @@ checklist: [
 id: "d-write-pow2",
 kind: "write",
 track: "Embedded C",
+d: 1,
 title: "Powers of two, and rounding up to one",
 mins: 10,
 brief: `
@@ -423,6 +430,7 @@ checklist: [
 id: "d-write-utoa",
 kind: "write",
 track: "Embedded C",
+d: 2,
 title: "Integer to string, without printf",
 mins: 12,
 brief: `

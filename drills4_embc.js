@@ -11,6 +11,7 @@ DRILLS.push(
 id: "d-spot-z-work",
 kind: "spot",
 track: "Embedded C",
+d: 2,
 title: "A Zephyr work handler that takes the system down with it",
 mins: 12,
 brief: `
@@ -101,6 +102,7 @@ checklist: [
 id: "d-spot-z-init",
 kind: "spot",
 track: "Embedded C",
+d: 2,
 title: "A Zephyr driver init that cannot work",
 mins: 12,
 brief: `
@@ -188,6 +190,7 @@ checklist: [
 id: "d-spot-z-isr",
 kind: "spot",
 track: "Embedded C",
+d: 2,
 title: "Zephyr calls from the wrong context",
 mins: 10,
 brief: `
@@ -270,6 +273,7 @@ checklist: [
 id: "d-spot-z-dt",
 kind: "spot",
 track: "Embedded C",
+d: 1,
 title: "A board bring-up that builds and does nothing",
 mins: 10,
 brief: `
@@ -346,6 +350,7 @@ checklist: [
 id: "d-spot-z-thread",
 kind: "spot",
 track: "Embedded C",
+d: 2,
 title: "Threads ported from FreeRTOS",
 mins: 10,
 brief: `
@@ -436,6 +441,7 @@ checklist: [
 id: "d-write-z-sensor",
 kind: "write",
 track: "Embedded C",
+d: 2,
 title: "A Zephyr sensor read you can test off-target",
 mins: 15,
 brief: `
@@ -500,6 +506,7 @@ checklist: [
 id: "d-write-z-worker",
 kind: "write",
 track: "Embedded C",
+d: 3,
 title: "Deferred work with a retry, done safely",
 mins: 15,
 brief: `
@@ -578,6 +585,7 @@ checklist: [
 id: "d-write-z-msgq",
 kind: "write",
 track: "Embedded C",
+d: 2,
 title: "ISR to thread, without losing data silently",
 mins: 14,
 brief: `
