@@ -11,6 +11,7 @@ DRILLS.push(
 id: "d-pat-bits",
 kind: "pattern",
 track: "Embedded C",
+d: 1,
 title: "Set, clear, toggle and test a bit",
 mins: 5,
 brief: `
@@ -77,6 +78,7 @@ checklist: [
 id: "d-pat-field",
 kind: "pattern",
 track: "Embedded C",
+d: 2,
 title: "Read and write a register field",
 mins: 6,
 brief: `
@@ -132,6 +134,7 @@ checklist: [
 id: "d-pat-wait",
 kind: "pattern",
 track: "Embedded C",
+d: 2,
 title: "A wait that cannot hang",
 mins: 6,
 brief: `
@@ -190,6 +193,7 @@ checklist: [
 id: "d-pat-clamp",
 kind: "pattern",
 track: "Embedded C",
+d: 1,
 title: "Clamp and saturate",
 mins: 5,
 brief: `
@@ -251,6 +255,7 @@ checklist: [
 id: "d-pat-bytes",
 kind: "pattern",
 track: "Embedded C",
+d: 2,
 title: "Bytes to a value, and back",
 mins: 6,
 brief: `
@@ -303,6 +308,7 @@ checklist: [
 id: "d-pat-errcheck",
 kind: "pattern",
 track: "Embedded C",
+d: 1,
 title: "Propagating an error without losing it",
 mins: 6,
 brief: `
@@ -380,6 +386,7 @@ checklist: [
 id: "d-pat-macros",
 kind: "pattern",
 track: "Embedded C",
+d: 1,
 title: "The three macros, parenthesised properly",
 mins: 5,
 brief: `
@@ -439,6 +446,7 @@ checklist: [
 id: "d-pat-ring",
 kind: "pattern",
 track: "Embedded C",
+d: 3,
 title: "The smallest ring buffer that works",
 mins: 8,
 brief: `
@@ -512,6 +520,7 @@ checklist: [
 id: "d-pat-scale",
 kind: "pattern",
 track: "Embedded C",
+d: 2,
 title: "Counts to units, without overflowing",
 mins: 6,
 brief: `
@@ -566,6 +575,7 @@ checklist: [
 id: "d-pat-seam",
 kind: "pattern",
 track: "Embedded C",
+d: 3,
 title: "The transport struct, from memory",
 mins: 8,
 brief: `

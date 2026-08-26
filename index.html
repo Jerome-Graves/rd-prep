@@ -578,6 +578,7 @@
     <script src="drills3_embc.js"></script>
     <script src="drills4_embc.js"></script>
     <script src="drills5_embc.js"></script>
+    <script src="drills6_embc.js"></script>
     <script src="editor.js"></script>
     <script src="ccheck.js"></script>
     <script src="crun.js"></script>
@@ -586,6 +587,7 @@
     <script src="drilltests3.js"></script>
     <script src="drilltests4.js"></script>
     <script src="drilltests5.js"></script>
+    <script src="drilltests6.js"></script>
     <script src="drillbugs.js"></script>
     <script src="drillbugs4.js"></script>
     <script>
@@ -1270,13 +1272,19 @@
                 + kinds.map(k => '<button class="fb' + (drillFilter === k[0] ? " on" : "") + '" data-k="'
                     + k[0] + '">' + k[1] + ' (' + drillsFor(k[0]).length + ')</button>').join("")
                 + '</div>';
-            drillsFor(drillFilter).forEach(d => {
+            // easiest first. Drills without a difficulty keep their file order,
+            // because a stable sort leaves equal keys where they were.
+            const shown = drillsFor(drillFilter).slice()
+                .sort((a, b) => (a.d || 9) - (b.d || 9));
+            const LEVEL = { 1: "easy", 2: "medium", 3: "harder" };
+            shown.forEach(d => {
                 const st = state.drills[d.id];
                 const score = st && st.marked ? st.score + "/" + st.of : "";
                 h += '<a class="drill-row" href="#drill/' + d.id + '">'
                     + '<span class="drill-kind ' + d.kind + '">' + kindLabel(d.kind, true) + '</span>'
                     + '<span class="dtitle">' + d.title + '</span>'
-                    + '<span class="dmeta">' + (score ? score + " &middot; " : "") + d.mins + ' min</span></a>';
+                    + '<span class="dmeta">' + (score ? score + " &middot; " : "")
+                    + (d.d ? LEVEL[d.d] + ' &middot; ' : '') + d.mins + ' min</span></a>';
             });
             document.getElementById("main").innerHTML = h;
             document.querySelectorAll(".filterbar .fb").forEach(b => {
@@ -1295,7 +1303,9 @@
 
             let h = '<h1><span class="drill-kind ' + d.kind + '">'
                     + kindLabel(d.kind, false) + '</span>' + d.title + '</h1>'
-                + '<div class="lesson-meta">' + d.track + ' &middot; about ' + d.mins + ' min'
+                + '<div class="lesson-meta">' + d.track
+                + (d.d ? ' &middot; ' + ({1:"easy",2:"medium",3:"harder"})[d.d] : '')
+                + ' &middot; about ' + d.mins + ' min'
                 + (st.marked ? ' &middot; <span class="scorechip">last: ' + st.score + '/' + st.of + '</span>' : '')
                 + '</div>'
                 + '<div class="body">' + d.brief + '</div>'
