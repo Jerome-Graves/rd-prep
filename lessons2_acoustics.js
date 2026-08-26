@@ -408,7 +408,7 @@ deterministically.</p>
 <h3>Regularisation, the necessary confession</h3>
 <p>The cure is to add what you believe about the answer to the data misfit: penalise
 roughness (Tikhonov), preserve edges while suppressing oscillation (total variation),
-restrict to smooth basis functions, or stop iterating early, which acts as implicit
+confine it to smooth basis functions, or stop iterating early, which acts as implicit
 smoothing. Regularisation is a declared prior, and the honest statement of any inverse
 result includes it: the image is data plus assumptions, and knowing which features come
 from which is the difference between imaging and decorating.</p>`,
