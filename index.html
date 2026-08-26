@@ -10,16 +10,25 @@
         :root {
             --bg: #ffffff; --bg-alt: #f6f7f9; --text: #1c2127; --muted: #5b6672;
             --accent: #1d7a4f; --line: #e4e7eb; --good: #1d7a4f; --bad: #b3383e;
+            --warn: #a8760f;
+            --tk-str: #b8562a; --tk-pre: #8a56b0; --tk-num: #2d7d5c;
+            --tk-kw: #a83f6d; --tk-ty: #26719f;
         }
         @media (prefers-color-scheme: dark) {
             :root:not([data-theme="light"]) {
                 --bg: #14171b; --bg-alt: #1b1f25; --text: #e8eaed; --muted: #9aa4af;
                 --accent: #4ecb8d; --line: #2a2f36; --good: #4ecb8d; --bad: #f2716f;
+                --warn: #d9a441;
+                --tk-str: #d99a6c; --tk-pre: #c39ae0; --tk-num: #7fc7a4;
+                --tk-kw: #f08cb4; --tk-ty: #78bde8;
             }
         }
         :root[data-theme="dark"] {
             --bg: #14171b; --bg-alt: #1b1f25; --text: #e8eaed; --muted: #9aa4af;
             --accent: #4ecb8d; --line: #2a2f36; --good: #4ecb8d; --bad: #f2716f;
+                --warn: #d9a441;
+                --tk-str: #d99a6c; --tk-pre: #c39ae0; --tk-num: #7fc7a4;
+                --tk-kw: #f08cb4; --tk-ty: #78bde8;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -201,13 +210,117 @@
         .drill-row:hover { border-color: var(--accent); }
         .drill-row .dtitle { flex: 1; font-weight: 600; }
         .drill-row .dmeta { color: var(--muted); font-size: 13px; white-space: nowrap; }
-        .drill-answer {
-            width: 100%; min-height: 260px; resize: vertical; padding: 12px 14px; tab-size: 4;
+        /* ---- code editor -------------------------------------------------
+           A transparent textarea sits exactly on top of a highlighted <pre>.
+           Font, size, line-height and padding MUST match between the two or
+           the caret drifts away from the text. line-height is a whole number
+           of pixels so the gutter rows line up with the code rows. */
+        .ed {
+            --ed-line: 20px;
+            display: flex; height: 360px; min-height: 160px;
+            resize: vertical; overflow: hidden;
             border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
-            color: var(--text); font-family: Consolas, "Cascadia Code", Menlo, monospace;
-            font-size: 13.5px; line-height: 1.55;
         }
-        .drill-answer:focus { outline: none; border-color: var(--accent); }
+        .ed:focus-within { border-color: var(--accent); }
+        .ed-gutter {
+            flex: 0 0 auto; width: 46px; overflow: hidden; user-select: none;
+            background: var(--bg-alt); border-right: 1px solid var(--line);
+            padding: 12px 0;
+        }
+        .ed-n {
+            height: var(--ed-line); line-height: var(--ed-line);
+            padding: 0 8px 0 0; text-align: right;
+            font-family: Consolas, "Cascadia Code", Menlo, monospace;
+            font-size: 12.5px; color: var(--muted); opacity: 0.65;
+        }
+        .ed-n.on { opacity: 1; color: var(--accent); font-weight: 600; }
+        .ed-n.err, .ed-n.warn { opacity: 1; font-weight: 600; border-right: 3px solid; margin-right: -3px; }
+        .ed-n.err { color: var(--bad); border-color: var(--bad); }
+        .ed-n.warn { color: var(--warn); border-color: var(--warn); }
+        .ed-code { position: relative; flex: 1 1 auto; min-width: 0; }
+        .ed-hl, .ed-code textarea {
+            margin: 0; padding: 12px 14px; border: 0;
+            font-family: Consolas, "Cascadia Code", Menlo, monospace;
+            font-size: 13.5px; line-height: var(--ed-line);
+            white-space: pre; word-wrap: normal; tab-size: 4;
+        }
+        .ed-hl {
+            position: absolute; inset: 0; overflow: hidden;
+            pointer-events: none; color: var(--text); background: none;
+        }
+        .ed-code textarea {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            overflow: auto; resize: none; background: transparent;
+            color: transparent; -webkit-text-fill-color: transparent;
+            caret-color: var(--accent);
+        }
+        .ed-code textarea:focus { outline: none; }
+        .ed-code textarea::selection { background: rgba(120, 160, 255, 0.32); }
+        .ed-ph { color: var(--muted); }
+        /* token colours come from the theme variables, so they follow all three
+           theme paths (light, explicit dark, and system dark) automatically */
+        .c-com { color: var(--muted); font-style: italic; }
+        .c-str { color: var(--tk-str); }
+        .c-pre { color: var(--tk-pre); }
+        .c-num { color: var(--tk-num); }
+        .c-kw  { color: var(--tk-kw); font-weight: 600; }
+        .c-ty  { color: var(--tk-ty); }
+        .c-cn  { color: var(--tk-num); }
+        .c-fn  { color: var(--text); font-weight: 600; }
+        /* squiggle layer: absolutely placed by (line, col) because the font is
+           monospace, so a single character-width measurement is exact */
+        .ed-sq { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+        .ed-wave {
+            position: absolute; height: var(--ed-line); display: block;
+            background-repeat: repeat-x; background-position: left bottom;
+            background-size: 6px 3px; pointer-events: none;
+        }
+        .ed-wave.err {
+            background-image: linear-gradient(45deg, transparent 45%, var(--bad) 45%, var(--bad) 55%, transparent 55%),
+                              linear-gradient(-45deg, transparent 45%, var(--bad) 45%, var(--bad) 55%, transparent 55%);
+            background-size: 6px 3px, 6px 3px;
+            background-position: 0 calc(var(--ed-line) - 3px), 3px calc(var(--ed-line) - 3px);
+            background-repeat: repeat-x, repeat-x;
+        }
+        .ed-wave.warn {
+            background-image: linear-gradient(45deg, transparent 45%, var(--warn) 45%, var(--warn) 55%, transparent 55%),
+                              linear-gradient(-45deg, transparent 45%, var(--warn) 45%, var(--warn) 55%, transparent 55%);
+            background-size: 6px 3px, 6px 3px;
+            background-position: 0 calc(var(--ed-line) - 3px), 3px calc(var(--ed-line) - 3px);
+            background-repeat: repeat-x, repeat-x;
+        }
+        /* completion popup */
+        .ed-pop {
+            display: none; position: absolute; z-index: 5; min-width: 190px; max-width: 300px;
+            background: var(--bg-alt); border: 1px solid var(--line); border-radius: 7px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.18); overflow: hidden; padding: 3px;
+        }
+        .ed-pop.show { display: block; }
+        .ed-pi {
+            display: flex; align-items: center; gap: 8px; padding: 3px 7px; border-radius: 5px;
+            font-family: Consolas, "Cascadia Code", Menlo, monospace; font-size: 13px;
+            color: var(--text); cursor: pointer; white-space: nowrap;
+        }
+        .ed-pi.on { background: var(--accent); color: var(--bg); }
+        .ed-pk {
+            font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+            width: 20px; text-align: center; border-radius: 3px; padding: 1px 0; flex: 0 0 auto;
+            background: var(--line); color: var(--muted);
+        }
+        .ed-pi.on .ed-pk { background: rgba(255,255,255,0.28); color: var(--bg); }
+        .ed-pk.kw { color: var(--tk-kw); }
+        .ed-pk.ty { color: var(--tk-ty); }
+        .ed-pk.cn { color: var(--tk-num); }
+        .ed-pk.fn { color: var(--tk-pre); }
+        .ed-help {
+            color: var(--muted); font-size: 12.5px; margin: 6px 2px 0;
+            display: flex; gap: 14px; flex-wrap: wrap;
+        }
+        .ed-help kbd {
+            font-family: Consolas, Menlo, monospace; font-size: 11.5px;
+            border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+            background: var(--bg-alt);
+        }
         .model { display: none; }
         .model.show { display: block; }
         .check {
@@ -431,6 +544,7 @@
     <script>const DRILLS = [];</script>
     <script src="drills_embc.js"></script>
     <script src="drills2_embc.js"></script>
+    <script src="editor.js"></script>
     <script src="ccheck.js"></script>
     <script src="crun.js"></script>
     <script src="drilltests.js"></script>
@@ -1145,6 +1259,12 @@
                 + (d.kind === "spot"
                     ? "List every fault you can find, and say why each one matters."
                     : "Write it here. Include the error handling.") + '"></textarea>'
+                + (d.kind === "write" ? '<div class="ed-help">'
+                + '<span><kbd>Tab</kbd> indent, <kbd>Shift</kbd>+<kbd>Tab</kbd> dedent</span>'
+                + '<span><kbd>Ctrl</kbd>+<kbd>/</kbd> comment</span>'
+                + '<span><kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</span>'
+                + '<span><kbd>Ctrl</kbd>+<kbd>Space</kbd> complete</span>'
+                + '<span>brackets and quotes auto-close</span></div>' : '')
                 + '<div class="btnrow"><button class="btn" id="checkBtn">Check my code</button>'
                 + (d.test ? '<button class="btn primary" id="runBtn">Compile and run tests</button>' : '')
                 + '<button class="btn' + (d.test ? '' : ' primary') + '" id="revealBtn">Reveal model answer</button></div>'
@@ -1171,6 +1291,18 @@
 
             const ta = document.getElementById("ans");
             ta.value = st.text || "";
+            // wrap it in the gutter/highlight editor. The textarea keeps its id
+            // and its value, so every handler below is unchanged.
+            const edWords = [];
+            [d.testSig, d.testPrelude, d.code].forEach(function (src) {
+                if (!src) return;
+                const re = /[A-Za-z_]\w{2,}/g;
+                let m;
+                while ((m = re.exec(src))) edWords.push(m[0]);
+            });
+            const ed = d.kind === "write"
+                ? makeEditor(ta, { words: edWords })
+                : { refresh: function () {}, mark: function () {}, clearMarks: function () {} };
             ta.addEventListener("input", function () {
                 const cur = state.drills[d.id] || {};
                 cur.text = ta.value; state.drills[d.id] = cur; saveState(state);
@@ -1203,10 +1335,12 @@
                 if (!src.trim()) {
                     h = '<div class="diag warn"><span class="ln">&mdash;</span>'
                       + '<span>Nothing to check yet. Write something first.</span></div>';
-                    out.innerHTML = h; out.classList.add("show"); return;
+                    out.innerHTML = h; out.classList.add("show"); ed.clearMarks(); return;
                 }
 
                 const r = checkC(src);
+                ed.mark(r.errors.map(e => ({ line: e.line, col: e.col, msg: e.msg, severity: "error" }))
+                    .concat(r.warnings.map(w => ({ line: w.line, col: w.col, msg: w.msg, severity: "warning" }))));
 
                 r.errors.forEach(e => {
                     h += '<div class="diag err"><span class="ln">line ' + e.line + '</span><span>'
@@ -1278,6 +1412,11 @@
 
                         const errs = r.diagnostics.filter(x => x.severity === "error");
                         const warns = r.diagnostics.filter(x => x.severity === "warning");
+                        // only mark lines that map back into the editor; harness
+                        // diagnostics have no line the user can see
+                        ed.mark(r.diagnostics
+                            .filter(x => x.where === "yours" && x.line)
+                            .map(x => ({ line: x.line, col: x.col, msg: x.msg, severity: x.severity })));
 
                         function diag(x, cls) {
                             const where = x.where === "yours"
