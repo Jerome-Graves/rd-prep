@@ -481,32 +481,63 @@
         const bankTracks = Object.keys(BANKS).filter(t => (BANKS[t] || []).length);
 
         // Map bank topic tags to lesson ids for "go study this" links.
+        //
+        // Keyed by track, because topic tags are only unique within a track:
+        // "practice" exists in both Acoustics and Control, and "estimation" in
+        // both Control and Robotics, so a flat map sent one of each pair to the
+        // wrong lesson. Embedded C needs no entries at all, since its topic tags
+        // are lesson ids already and topicLesson() falls back to that.
         const TOPIC_LESSON = {
-            raii: "raii", move: "move", stl: "stl", concurrency: "threads",
-            "embedded-cpp": "cpp-embedded", memory: "cpp-memory", idioms: "move",
-            classes: "cpp-classes", templates: "cpp-templates", const: "raii",
-            sampling: "sampling", quantisation: "dsp-noise", fft: "fft", spectral: "dsp-spectral",
-            filters: "filters", convolution: "dsp-convolution", decimation: "dsp-multirate",
-            "db-snr": "dsp-noise", timing: "dsp-timing", practical: "filters",
-            impedance: "impedance", attenuation: "ac-attenuation", transducers: "ac-transducers",
-            beams: "ac-beams", arrays: "arrays", levitation: "arrays", waves: "ac-waves",
-            measurement: "ac-measurement", doppler: "ac-doppler", practice: "pid",
-            pid: "pid", stability: "ct-stability", discrete: "ct-discrete",
-            statespace: "ct-statespace", kalman: "kalman", estimation: "rob-estimation",
-            motion: "ct-motion", robustness: "ct-robust",
-            opamps: "frontend", "passives-filters": "frontend", "adc-dac": "el-adc",
-            "noise-grounding": "el-noise", power: "el-power", sensors: "el-sensors",
-            buses: "el-buses", "interrupts-dma": "embedded", rtos: "embedded", "debug-pcb": "el-debug",
-            structures: "structures", complexity: "cm-hash", "memory-cache": "cm-memory",
-            fsm: "structures", "concurrency-concepts": "cm-concurrency",
-            "linear-algebra": "cm-linalg", optimisation: "leastsq", "floating-point": "cm-float",
-            "probability-stats": "cm-stats",
-            ros: "rob-ros", kinematics: "rob-kinematics", locomotion: "rob-locomotion",
-            perception: "rob-perception", "slam-nav": "rob-slam", actuators: "rob-actuators",
-            architecture: "rob-ros", sim: "rob-sim",
-            "verilog-syntax": "rtl-verilog", "blocking-nba": "rtl-nba", "rtl-design": "rtl-fsm",
-            "timing-cdc": "rtl-cdc", synthesis: "rtl-synth", verification: "rtl-verif",
-            systemverilog: "rtl-sv", "fpga-arch": "rtl-fpga"
+            "C++": {
+                raii: "raii", move: "move", stl: "stl", concurrency: "threads",
+                "embedded-cpp": "cpp-embedded", memory: "cpp-memory",
+                classes: "cpp-classes", templates: "cpp-templates",
+                idioms: "cpp-strings",      // optional, string_view, span, structured bindings
+                const: "cpp-api"            // const correctness as an interface decision
+            },
+            "DSP": {
+                sampling: "sampling", quantisation: "dsp-noise", fft: "fft",
+                spectral: "dsp-spectral", filters: "filters",
+                convolution: "dsp-convolution", decimation: "dsp-multirate",
+                "db-snr": "dsp-noise", timing: "dsp-timing", practical: "filters"
+            },
+            "Acoustics": {
+                impedance: "impedance", attenuation: "ac-attenuation",
+                transducers: "ac-transducers", beams: "ac-beams", arrays: "arrays",
+                waves: "ac-waves", measurement: "ac-measurement", doppler: "ac-doppler",
+                levitation: "ac-airborne",  // the levitation engineering lesson
+                practice: "ac-safety"       // MI, TI and intensity metrics
+            },
+            "Control": {
+                pid: "pid", stability: "ct-stability", discrete: "ct-discrete",
+                statespace: "ct-statespace", kalman: "kalman", motion: "ct-motion",
+                robustness: "ct-robust", practice: "pid",
+                estimation: "ct-fusion"     // complementary filters and bias states
+            },
+            "Electronics": {
+                opamps: "frontend", "passives-filters": "frontend", "adc-dac": "el-adc",
+                "noise-grounding": "el-noise", power: "el-power", sensors: "el-sensors",
+                buses: "el-buses", "interrupts-dma": "embedded", rtos: "embedded",
+                "debug-pcb": "el-debug"
+            },
+            "CS & Maths": {
+                structures: "structures", "memory-cache": "cm-memory", fsm: "structures",
+                "concurrency-concepts": "cm-concurrency", "linear-algebra": "cm-linalg",
+                optimisation: "leastsq", "floating-point": "cm-float",
+                "probability-stats": "cm-stats",
+                complexity: "structures"    // the Big-O lesson, not the hash map one
+            },
+            "Robotics": {
+                ros: "rob-ros", kinematics: "rob-kinematics", locomotion: "rob-locomotion",
+                perception: "rob-perception", "slam-nav": "rob-slam",
+                actuators: "rob-actuators", sim: "rob-sim", estimation: "rob-estimation",
+                architecture: "rob-safety"  // e-stops, watchdogs, fail-safe
+            },
+            "RTL & Verilog": {
+                "verilog-syntax": "rtl-verilog", "blocking-nba": "rtl-nba",
+                "rtl-design": "rtl-fsm", "timing-cdc": "rtl-cdc", synthesis: "rtl-synth",
+                verification: "rtl-verif", systemverilog: "rtl-sv", "fpga-arch": "rtl-fpga"
+            }
         };
 
         function recordResult(item, correct) {
@@ -725,8 +756,17 @@
 
         // Collapsed panel holding the lesson text that covers a question.
         // Shown under the explanation so you can read the source without leaving the test.
-        function lessonRef(topicId) {
-            const l = byId[topicId];
+        // Resolve a bank question's topic tag to a lesson id. The per-track map
+        // wins, so a tag that happens to match a lesson id in some other track
+        // cannot resolve to it; Embedded C relies on the byId fallback.
+        function topicLesson(topic, track) {
+            const m = TOPIC_LESSON[track];
+            if (m && m[topic]) return m[topic];
+            return byId[topic] ? topic : null;
+        }
+
+        function lessonRef(topicId, track) {
+            const l = byId[topicLesson(topicId, track)];
             if (!l) return "";
             return '<details class="lref"><summary>Read the lesson: ' + l.title + '</summary>'
                 + '<div class="lref-body">' + l.body + '</div>'
@@ -809,7 +849,7 @@
             if (stats.length) {
                 h += '<h2>Your weakest topics right now</h2><table class="stats"><tr><th>Topic</th><th>Track</th><th>Accuracy</th><th></th></tr>';
                 stats.slice(0, 5).forEach(s => {
-                    const lid = TOPIC_LESSON[s.t];
+                    const lid = topicLesson(s.t, s.track);
                     h += '<tr><td>' + s.t + '</td><td class="muted">' + s.track + '</td>'
                         + '<td><span class="acc">' + Math.round(100 * s.acc) + '%</span>'
                         + '<span class="minibar"><div class="' + (s.acc >= 0.7 ? "good-bg" : "bad-bg") + '" style="width:' + Math.round(100 * s.acc) + '%"></div></span></td>'
@@ -972,7 +1012,7 @@
                 + '<span class="muted">' + item.track + ' &middot; ' + item.t + '</span></div>'
                 + '<div class="progressbar"><div style="width:' + Math.round(100 * test.i / test.items.length) + '%"></div></div>'
                 + '<div class="card"><div class="qq">' + item.q + '</div><div id="opts"></div>'
-                + '<div class="why" id="why">' + item.why + lessonRef(item.t) + '</div></div>'
+                + '<div class="why" id="why">' + item.why + lessonRef(item.t, item.track) + '</div></div>'
                 + '<div class="navrow"><button class="btn" id="quitBtn">End test</button>'
                 + '<button class="btn primary" id="nextBtn" style="display:none">Next &rarr;</button></div>';
             document.getElementById("main").innerHTML = h;
@@ -1017,7 +1057,7 @@
             Object.keys(test.perTopic).map(t => Object.assign({ t }, test.perTopic[t]))
                 .sort((a, b) => (a.right / a.n) - (b.right / b.n))
                 .forEach(s => {
-                    const lid = TOPIC_LESSON[s.t];
+                    const lid = topicLesson(s.t, s.track);
                     h += '<tr><td>' + s.t + '</td><td class="muted">' + s.track + '</td>'
                         + '<td>' + s.right + '/' + s.n + '</td>'
                         + '<td>' + (lid ? '<a href="#lesson/' + lid + '">review lesson</a>' : '') + '</td></tr>';
@@ -1363,7 +1403,7 @@
             // per topic, weakest first
             h += '<h2>By topic (weakest first)</h2><table class="stats"><tr><th>Topic</th><th>Track</th><th>Answered</th><th>Accuracy</th><th></th></tr>';
             stats.sort((a, b) => a.acc - b.acc).forEach(s => {
-                const lid = TOPIC_LESSON[s.t];
+                const lid = topicLesson(s.t, s.track);
                 const acc = Math.round(100 * s.acc);
                 h += '<tr><td>' + s.t + '</td><td class="muted">' + s.track + '</td><td>' + s.n + '</td>'
                     + '<td><span class="acc">' + acc + '%</span>'
