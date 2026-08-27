@@ -867,12 +867,38 @@ track: "Embedded C",
 d: 3,
 title: "A fake transport for driver tests",
 mins: 14,
-brief: `<p>You have a driver taking an injected transport:</p>
-<pre>int  (*read) (void *ctx, uint8_t reg, uint8_t *buf, size_t len);
-int  (*write)(void *ctx, uint8_t reg, const uint8_t *buf, size_t len);
-void (*delay_ms)(void *ctx, uint32_t ms);</pre>
-<p>Write a fake that lets a host test: preload register values, make a specific transfer fail,
-and check what the driver wrote and in what order. Then write one test using it.</p>`,
+brief: `
+<p>A driver takes its transport by injection, which is what makes it testable on the host with
+no hardware at all:</p>
+<pre>typedef struct {            /* provided */
+    int  (*read) (void *ctx, uint8_t reg, uint8_t *buf, size_t len);
+    int  (*write)(void *ctx, uint8_t reg, const uint8_t *buf, size_t len);
+    void (*delay_ms)(void *ctx, uint32_t ms);
+    void *ctx;
+} sensor_io_t;</pre>
+<p>Write the fake that plugs into it, plus one test that uses it.</p>
+<pre>typedef struct { ... } fake_t;
+
+void fake_init(fake_t *f);
+void fake_bind(fake_t *f, sensor_io_t *io);</pre>
+<p><b>fake_t must carry:</b></p>
+<ul>
+<li><code>uint8_t regs[256]</code>, the pretend register file, so a test can <b>preload</b> what
+a read will return.</li>
+<li><code>int fail_on_nth</code> and <code>int fail_rc</code>, so a test can make the Nth
+transfer <b>fail</b> with a chosen code. That is how you reach the error paths, which are
+otherwise unreachable and therefore untested.</li>
+<li><code>unsigned transfers</code>, counting how many have happened, so
+<code>fail_on_nth</code> has something to compare against.</li>
+<li>A write log: <code>log[]</code> with a <code>reg</code> and a <code>val</code> per entry,
+plus <code>unsigned log_n</code>. This is what lets a test assert <b>what</b> the driver wrote
+and <b>in what order</b>, which is usually the actual requirement.</li>
+<li><code>uint32_t virtual_ms</code>, advanced by the fake <code>delay_ms</code> instead of
+really sleeping, so the suite runs in milliseconds rather than minutes.</li>
+</ul>
+<p><code>fake_init</code> clears it all. <code>fake_bind</code> fills in the
+<code>sensor_io_t</code> with the fake's functions and sets <code>ctx</code> to the
+<code>fake_t</code>, which is how each callback finds its own state.</p>`,
 code: "",
 answer: `<pre>#define FAKE_REGS  256
 #define FAKE_LOG   64
@@ -986,10 +1012,22 @@ track: "Embedded C",
 d: 1,
 title: "Counts to millivolts, safely",
 mins: 10,
-brief: `<p>Write <code>int32_t adc_to_mv(uint16_t count, uint16_t vref_mv)</code> for a 12-bit
-ADC.</p>
-<p>It must be exact across the whole input range, must not overflow for any plausible
-reference up to 5000 mV, and must not lose resolution. Say what you would test.</p>`,
+brief: `
+<p>Convert a 12-bit ADC reading to millivolts, exactly, in integer arithmetic.</p>
+<pre>int32_t adc_to_mv(uint16_t count, uint16_t vref_mv);</pre>
+<ul>
+<li><code>count</code> the raw conversion result, 0 to 4095 for a 12-bit part.</li>
+<li><code>vref_mv</code> the reference voltage in millivolts, so 3300 for 3.3 V. A full-scale
+reading corresponds to this. Assume anything up to 5000.</li>
+</ul>
+<p><b>Returns.</b> The input voltage in millivolts. 0 counts is 0 mV, and 4095 counts is
+<code>vref_mv</code>.</p>
+<p><b>The trap.</b> <code>count * vref_mv</code> reaches about 20 million, which overflows a
+16-bit intermediate and comes out as nonsense. Work out what type the multiplication actually
+happens in, and make it the one you meant.</p>
+<p><b>The other trap.</b> Dividing first throws away all the resolution, so multiply first.
+Say what you would test: both ends of the range, and the value where a 16-bit intermediate would
+have wrapped.</p>`,
 code: "",
 answer: `<pre>#define ADC_MAX  4095u          /* 12-bit full scale */
 
@@ -1050,10 +1088,28 @@ track: "Embedded C",
 d: 2,
 title: "A moving average that kills mains hum",
 mins: 12,
-brief: `<p>Samples arrive at 1 kHz and carry 50 Hz interference. Write a moving average filter
-that removes the hum, costs constant time per sample regardless of window length, and supports
-several channels.</p>
-<p>State the window length you chose and why.</p>`,
+brief: `
+<p>Samples arrive at 1 kHz carrying 50 Hz mains interference. Write a moving average that
+removes it.</p>
+<pre>#define MAVG_N  ...             /* you choose the number */
+
+typedef struct { ... } mavg_t;  /* you define the members */
+
+void    mavg_init  (mavg_t *m);
+int32_t mavg_update(mavg_t *m, int32_t v);</pre>
+<ul>
+<li><code>m</code> the filter's state. One per channel, which is why it is a parameter rather
+than a static, and the reason the drill asks for several channels.</li>
+<li><code>v</code> the newest sample.</li>
+</ul>
+<p><b>Returns.</b> <code>mavg_init</code> returns nothing and leaves the filter with an empty
+history. <code>mavg_update</code> returns the current average.</p>
+<p><b>Constant time per sample.</b> Summing the window on every call is O(N) and is the answer
+being tested against. Keep a running sum: add the new sample, subtract the one leaving the
+window. That is O(1) whatever the window length.</p>
+<p><b>State the window length and why.</b> A moving average has nulls at multiples of the sample
+rate divided by N, so pick the N that puts a null exactly on 50 Hz at 1 kHz. Being able to say
+that out loud is the difference between choosing a number and guessing one.</p>`,
 code: "",
 answer: `<pre>/* 1 kHz sampling, 50 Hz interference -> one mains period is 20 samples.
  * A moving average of N has nulls at multiples of Fs/N, so N = 20 places a
@@ -1359,10 +1415,30 @@ track: "Embedded C",
 d: 3,
 title: "Framing that resynchronises by itself",
 mins: 13,
-brief: `<p>A serial link keeps losing sync after corruption and never recovers until a
-timeout. Design and write a framing scheme that resynchronises on its own, and explain why it
-works.</p>
-<p>You may assume a CRC already exists.</p>`,
+brief: `
+<p>A serial link keeps losing sync after corruption and does not recover until a timeout.
+Fix it with framing that resynchronises on its own.</p>
+<p>The idea: reserve one byte value as the frame delimiter, then guarantee that value can never
+appear inside a frame. A receiver that is lost only has to wait for the next delimiter to know
+exactly where it is. Consistent Overhead Byte Stuffing is the usual way, and it costs one byte
+per 254.</p>
+<pre>size_t cobs_encode(const uint8_t *in, size_t len, uint8_t *out, size_t cap);
+
+size_t cobs_decode(const uint8_t *in, size_t len, uint8_t *out, size_t cap);
+                                              /* provided, and correct */</pre>
+<ul>
+<li><code>in</code> the payload to encode; <code>len</code> its length, possibly 0.</li>
+<li><code>out</code> the buffer to write the encoded frame into; <code>cap</code> its size. It
+may be too small, and that must not be an overrun.</li>
+</ul>
+<p><b>Returns.</b> The number of bytes written, <b>including</b> the trailing zero delimiter, or
+<b>0</b> if it will not fit.</p>
+<p><b>The guarantee.</b> No zero byte anywhere in the output except that final delimiter, for
+any input at all, including an input that is all zeroes and one that has no zeroes in 254 bytes.
+Those two are the edge cases.</p>
+<p>The provided decoder is your check: encode, decode, and you must get back exactly what you
+started with. Then explain why a receiver that joins mid-stream recovers at the next zero, and
+assume a CRC already exists on top.</p>`,
 code: "",
 answer: `<p><b>The design.</b> Use a delimiter byte that cannot occur inside a payload, so a
 receiver can always find a frame boundary by scanning forward. Zero is the conventional

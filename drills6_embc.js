@@ -11,9 +11,15 @@ d: 1,
 title: "Swap two values",
 mins: 4,
 brief: `
-<p>The smallest one there is.</p>
+<p>Exchange the values two pointers point at.</p>
 <pre>void swap_i32(int32_t *a, int32_t *b);</pre>
-<p>Then say what you think of the XOR trick.</p>`,
+<ul>
+<li><code>a</code>, <code>b</code> point at the two values to exchange. Both are valid, and
+they may point at the <b>same</b> object.</li>
+</ul>
+<p><b>Returns.</b> Nothing. The effect is that <code>*a</code> and <code>*b</code> have traded
+values.</p>
+<p>Then say what you think of the XOR trick, and why.</p>`,
 answer: `
 <pre>void swap_i32(int32_t *a, int32_t *b)
 {
@@ -67,10 +73,17 @@ d: 1,
 title: "Absolute value, and the one input that breaks it",
 mins: 5,
 brief: `
-<p>Two small functions.</p>
-<pre>int32_t sign_i32(int32_t v);      /* -1, 0 or +1 */
-uint32_t abs_i32(int32_t v);      /* magnitude, note the return type */</pre>
-<p>The return type of the second one is the whole question.</p>`,
+<p>Two functions about the sign of a number.</p>
+<pre>int32_t  sign_i32(int32_t v);
+uint32_t abs_i32 (int32_t v);</pre>
+<ul>
+<li><code>v</code> any <code>int32_t</code>, <b>including INT32_MIN</b>. That input is the whole
+question.</li>
+</ul>
+<p><b>Returns.</b> <code>sign_i32</code> gives -1, 0 or +1. <code>abs_i32</code> gives the
+magnitude of <code>v</code>.</p>
+<p>Note the return type of the second one, and work out why it has to be that rather than
+<code>int32_t</code>.</p>`,
 answer: `
 <pre>int32_t sign_i32(int32_t v)
 {
@@ -137,11 +150,20 @@ d: 2,
 title: "Has the timeout expired?",
 mins: 6,
 brief: `
-<p>A free-running millisecond tick that wraps at 2^32.</p>
+<p>Decide whether a timeout has expired, on a free-running millisecond counter that wraps back
+to zero at 2^32.</p>
 <pre>bool expired(uint32_t start, uint32_t now, uint32_t timeout_ms);</pre>
-<p>Return true once <code>timeout_ms</code> has passed since <code>start</code>. It must keep
-working when the tick wraps, which it will after about 49 days.</p>
-<p>This is a one-liner that is very commonly written wrong.</p>`,
+<ul>
+<li><code>start</code> the counter's value when the operation began.</li>
+<li><code>now</code> the counter's value at this moment. It may be <b>smaller</b> than
+<code>start</code>, because the counter wrapped in between. That is the case this exists
+for.</li>
+<li><code>timeout_ms</code> how long the operation is allowed to take.</li>
+</ul>
+<p><b>Returns.</b> true once at least <code>timeout_ms</code> has elapsed since
+<code>start</code>, false before that. Exactly <code>timeout_ms</code> counts as expired.</p>
+<p>A one-liner, and one of the most commonly written wrong. The counter wraps after about 49
+days, which is longer than most soak tests.</p>`,
 answer: `
 <pre>bool expired(uint32_t start, uint32_t now, uint32_t timeout_ms)
 {
@@ -194,11 +216,19 @@ d: 2,
 title: "Rounding up to an alignment",
 mins: 6,
 brief: `
-<p>Two functions, with <code>a</code> always a power of two.</p>
-<pre>uint32_t align_up(uint32_t v, uint32_t a);
+<p>Round a value up to a boundary, and test whether it is already on one.</p>
+<pre>uint32_t align_up  (uint32_t v, uint32_t a);
 bool     is_aligned(uint32_t v, uint32_t a);</pre>
-<p><code>align_up(0, 8)</code> is 0, <code>align_up(1, 8)</code> is 8, <code>align_up(8, 8)</code>
-is 8. No division and no loop.</p>`,
+<ul>
+<li><code>v</code> the value, typically a size or an address.</li>
+<li><code>a</code> the alignment, <b>always a power of two</b>: 1, 2, 4, 8, 4096. Your answer is
+allowed to rely on that, and you should be able to say why it must.</li>
+</ul>
+<p><b>Returns.</b> <code>align_up</code> gives the smallest multiple of <code>a</code> that is
+at least <code>v</code>, so <code>align_up(1, 8)</code> is 8 and <code>align_up(8, 8)</code> is
+<b>8</b>, not 16. <code>is_aligned</code> is true when <code>v</code> is already a multiple of
+<code>a</code>.</p>
+<p>No division and no loop.</p>`,
 answer: `
 <pre>uint32_t align_up(uint32_t v, uint32_t a)
 {
@@ -256,17 +286,21 @@ d: 2,
 title: "Declaring a hardware register",
 mins: 6,
 brief: `
-<p>No functions. Write the declarations, which is the thing most likely to be asked cold.</p>
-<pre>/* 1. a read-write 32-bit register at 0x40021000, as a macro
-      you can assign to:            REG_CTRL = 0x12; */
-
-/* 2. a read-only status register at 0x40021004: the hardware
-      changes it, your code must not write it */
-
-/* 3. a pointer to a volatile int */
-
-/* 4. a volatile pointer to a non-volatile int */</pre>
-<p>Say why each qualifier is where it is. The exercise is the placement, not the addresses.</p>`,
+<p>No functions to write. Produce four declarations, which is the thing most likely to be asked
+from a standing start.</p>
+<ol>
+<li>A <b>read-write</b> 32-bit hardware register at address <code>0x40021000</code>, as a macro
+you can assign to directly: <code>REG_CTRL = 0x12;</code> and <code>REG_CTRL |= 1u;</code> must
+both work.</li>
+<li>A <b>read-only</b> status register at <code>0x40021004</code>. The hardware changes it on
+its own; your code must be prevented from writing to it.</li>
+<li>A pointer to a volatile int, meaning the <b>thing pointed at</b> can change underneath
+you.</li>
+<li>A volatile pointer to an ordinary int, meaning the <b>pointer itself</b> can change
+underneath you.</li>
+</ol>
+<p>Then say why each qualifier is where it is. The placement is the exercise, not the
+addresses.</p>`,
 answer: `
 <pre>/* 1. read-write register */
 #define REG_CTRL   (*(volatile uint32_t *)0x40021000u)
@@ -336,11 +370,18 @@ title: "container_of, and why it exists",
 mins: 8,
 brief: `
 <p>Given a pointer to a member, recover a pointer to the struct that contains it.</p>
-<pre>#define container_of(ptr, type, member)  /* ... */</pre>
-<p>Then use it: a linked list node is embedded in a larger struct, and a callback receives only
-the node.</p>
-<p>This is how intrusive lists work in the Linux kernel, in Zephyr, and in every RTOS you will
-meet.</p>`,
+<pre>#define container_of(ptr, type, member)   /* write this */</pre>
+<ul>
+<li><code>ptr</code> a pointer to a member sitting inside some larger struct. It may be an
+expression, not just a plain variable.</li>
+<li><code>type</code> the type of the containing struct, for example <code>struct task</code>.</li>
+<li><code>member</code> the <b>name</b> of the member that <code>ptr</code> points at, for
+example <code>link</code>.</li>
+</ul>
+<p><b>Evaluates to.</b> A <code>type *</code> pointing at the containing struct. The member is
+not necessarily the first one, so the answer cannot be a plain cast.</p>
+<p>This is how intrusive lists work in the Linux kernel, in Zephyr and in every RTOS you will
+meet: a callback receives only the list node, and has to get back to the object.</p>`,
 answer: `
 <pre>#define container_of(ptr, type, member) \\
     ((type *)((char *)(ptr) - offsetof(type, member)))</pre>

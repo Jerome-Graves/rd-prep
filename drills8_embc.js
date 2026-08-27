@@ -12,14 +12,25 @@ d: 1,
 title: "A threshold that does not chatter",
 mins: 10,
 brief: `
-<p>A comparator with hysteresis, in software.</p>
+<p>A comparator with hysteresis, in software: a threshold that will not chatter when the signal
+sits on it.</p>
 <pre>typedef struct { int32_t on, off; bool state; } hyst_t;
 
-void hyst_init(hyst_t *h, int32_t on_threshold, int32_t off_threshold);
-bool hyst_update(hyst_t *h, int32_t v);   /* returns the new state */</pre>
-<p>Rules: it turns <b>on</b> when the value reaches <code>on</code>, and <b>off</b> when it drops
-to <code>off</code>. Between the two it holds whatever it was. Starts off. Assume
-<code>on &gt; off</code>.</p>`,
+void hyst_init  (hyst_t *h, int32_t on_threshold, int32_t off_threshold);
+bool hyst_update(hyst_t *h, int32_t v);</pre>
+<ul>
+<li><code>h</code> the comparator's state, supplied by the caller and initialised by
+<code>hyst_init</code>.</li>
+<li><code>on_threshold</code> the level at or above which it switches <b>on</b>.</li>
+<li><code>off_threshold</code> the level at or below which it switches <b>off</b>. Assume
+<code>on_threshold &gt; off_threshold</code>; the gap between them is the hysteresis.</li>
+<li><code>v</code> the newest sample.</li>
+</ul>
+<p><b>Returns.</b> <code>hyst_init</code> returns nothing and leaves the state <b>off</b>.
+<code>hyst_update</code> returns the state after considering <code>v</code>.</p>
+<p><b>The rule.</b> Reaching <code>on</code> turns it on. Dropping to <code>off</code> turns it
+off. Anywhere between the two, it keeps whatever it already was. That middle case is the whole
+point, and it is why the previous state has to be stored.</p>`,
 answer: `
 <pre>void hyst_init(hyst_t *h, int32_t on_threshold, int32_t off_threshold)
 {
@@ -79,15 +90,28 @@ d: 2,
 title: "Hex, both directions, with the validation",
 mins: 14,
 brief: `
-<p>Two functions. The encoder is easy; the decoder is where the marks are.</p>
+<p>Hex in both directions. The encoder is easy; the decoder is where the marks are, because it
+is the one taking input from outside.</p>
 <pre>size_t hex_encode(const uint8_t *in, size_t len, char *out, size_t cap);
-/* lowercase, NUL-terminated. Returns characters written excluding the
-   terminator, or 0 if it will not fit. */
-
-int hex_decode(const char *in, uint8_t *out, size_t cap, size_t *out_len);
-/* 0 on success. Accepts upper or lower case. Rejects an odd length,
-   any non-hex character, and more bytes than cap. */</pre>
-<p>Use <code>-1</code> for any decode failure.</p>`,
+int    hex_decode(const char *in, uint8_t *out, size_t cap, size_t *out_len);</pre>
+<p><b>hex_encode</b></p>
+<ul>
+<li><code>in</code> the bytes to encode; <code>len</code> how many there are.</li>
+<li><code>out</code> the character buffer to fill; <code>cap</code> its size in bytes,
+<b>including</b> the terminator. Encoding 4 bytes needs a <code>cap</code> of at least 9.</li>
+</ul>
+<p>Produces <b>lowercase</b>, null-terminated text. <b>Returns</b> the characters written
+excluding the terminator, so <code>2 * len</code>, or <b>0</b> if it will not fit.</p>
+<p><b>hex_decode</b></p>
+<ul>
+<li><code>in</code> the null-terminated hex text. Accept upper or lower case, and treat the
+empty string as a valid decode of zero bytes.</li>
+<li><code>out</code> where the decoded bytes go; <code>cap</code> how many bytes it holds.</li>
+<li><code>out_len</code> where to store how many bytes were actually decoded. Only meaningful on
+success.</li>
+</ul>
+<p><b>Returns</b> 0 on success, or <b>-1</b> for any failure: an odd number of characters, any
+character that is not a hex digit, or more bytes than <code>cap</code> can take.</p>`,
 answer: `
 <pre>size_t hex_encode(const uint8_t *in, size_t len, char *out, size_t cap)
 {
@@ -271,17 +295,29 @@ d: 2,
 title: "A watchdog that only barks when it should",
 mins: 12,
 brief: `
-<p>Every task must prove it is alive before the watchdog is fed. Feeding from a timer is the
-bug this exists to prevent.</p>
+<p>Every task must prove it is alive before the watchdog is fed. Feeding it from a timer is
+exactly the bug this exists to prevent: the timer keeps running while every task is deadlocked,
+so the watchdog never fires and the product hangs forever.</p>
 <pre>#define WD_MAX_TASKS 8
 
 void wd_init(void);
-int  wd_register(void);        /* an id 0..7, or -1 if full */
+int  wd_register(void);
 void wd_checkin(int id);
-bool wd_all_checked_in(void);  /* true only if EVERY registered task has
-                                  reported; clears the flags when it does */</pre>
-<p>The supervisor calls <code>wd_all_checked_in()</code> and feeds the hardware watchdog only
-when it returns true.</p>`,
+bool wd_all_checked_in(void);</pre>
+<ul>
+<li><code>wd_register</code> takes nothing and <b>returns</b> a fresh id, 0 to 7, or <b>-1</b>
+when all <code>WD_MAX_TASKS</code> slots are taken. Each task calls it once at startup and keeps
+the id.</li>
+<li><code>id</code> in <code>wd_checkin</code> is that id. A task calls it each time round its
+loop to say "still running". An id outside the registered range must be ignored rather than
+corrupt anything.</li>
+</ul>
+<p><b>wd_all_checked_in</b> returns true only when <b>every</b> registered task has checked in
+since the last time it returned true, and clears the flags when it does, so the next round
+starts fresh. It returns false if even one task is missing.</p>
+<p>The supervisor calls it and feeds the hardware watchdog only when it is true. A task with no
+registered peers should not make it pass by accident, and neither should an unregistered
+slot.</p>`,
 answer: `
 <pre>static uint32_t wd_registered;      /* bit per allocated id */
 static volatile uint32_t wd_seen;   /* bit per id that has checked in */
@@ -375,18 +411,31 @@ d: 3,
 title: "A fixed-block pool, so malloc is not needed",
 mins: 16,
 brief: `
-<p>A allocator that cannot fragment: every block is the same size.</p>
+<p>An allocator that cannot fragment, because every block is the same size. This is what
+replaces <code>malloc</code> when fragmentation over months of uptime is unacceptable.</p>
 <pre>#define POOL_BLOCKS      8
 #define POOL_BLOCK_SIZE  32     /* bytes, and a multiple of 4 */
 
 void   pool_init(void);
-void  *pool_alloc(void);        /* NULL when exhausted */
-void   pool_free(void *p);      /* pool_free(NULL) is a no-op */
+void  *pool_alloc(void);
+void   pool_free(void *p);
 size_t pool_free_count(void);</pre>
-<p>Static storage only, no <code>malloc</code>. Blocks must be suitably aligned and must not
-overlap.</p>
-<p>Thread a free list through the free blocks themselves, so the bookkeeping costs no extra
-memory.</p>`,
+<ul>
+<li><code>pool_init</code> takes nothing, returns nothing, and puts every block back on the free
+list. Calling it twice must be safe.</li>
+<li><code>pool_alloc</code> takes nothing and <b>returns</b> a pointer to a free block of
+<code>POOL_BLOCK_SIZE</code> bytes, or <b>NULL</b> when all <code>POOL_BLOCKS</code> are
+out.</li>
+<li><code>p</code> in <code>pool_free</code> is a pointer previously returned by
+<code>pool_alloc</code>. <code>pool_free(NULL)</code> must be a no-op, matching what
+<code>free</code> does.</li>
+<li><code>pool_free_count</code> <b>returns</b> how many blocks are currently available, so 8
+after <code>pool_init</code> and 0 once all are taken.</li>
+</ul>
+<p>Static storage only, no <code>malloc</code>. Blocks must be suitably aligned for anything the
+caller stores in them, and must not overlap.</p>
+<p>Thread the free list through the free blocks <b>themselves</b>, so the bookkeeping costs no
+extra memory. That is the trick worth knowing, and it is why the block size has a minimum.</p>`,
 answer: `
 <pre>/* aligned so a block can hold any type the caller puts in it */
 static union {

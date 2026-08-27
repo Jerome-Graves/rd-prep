@@ -636,9 +636,22 @@ track: "Embedded C",
 d: 3,
 title: "CRC-16/CCITT and its self-test",
 mins: 12,
-brief: `<p>Write <code>uint16_t crc16_ccitt(const uint8_t *data, size_t len)</code>.</p>
-<p>Polynomial 0x1021, initial value 0xFFFF, no reflection of input or output, no final XOR.</p>
-<p>Also write the one test you would run first, and say what value it must produce.</p>`,
+brief: `
+<p>CRC-16/CCITT, the one you will meet on a serial link.</p>
+<pre>uint16_t crc16_ccitt(const uint8_t *data, size_t len);</pre>
+<ul>
+<li><code>data</code> the bytes to checksum. May be NULL only when <code>len</code> is 0.</li>
+<li><code>len</code> how many bytes, possibly 0.</li>
+</ul>
+<p><b>Returns.</b> The 16-bit CRC over those bytes.</p>
+<p><b>The parameters that define this variant:</b> polynomial <code>0x1021</code>, initial value
+<code>0xFFFF</code>, <b>no</b> reflection of input or output, and <b>no</b> final XOR. Getting
+any one of those wrong gives a function that is self-consistent and still cannot talk to
+anything.</p>
+<p>Then write the one test you would run first, and say what value it must produce. The standard
+check vector is the ASCII string <code>"123456789"</code>, nine bytes, and for this variant the
+answer is <code>0x29B1</code>. Knowing that a published check vector exists is half the
+answer.</p>`,
 code: "",
 answer: `<pre>uint16_t crc16_ccitt(const uint8_t *data, size_t len)
 {
@@ -822,15 +835,34 @@ track: "Embedded C",
 d: 2,
 title: "Serialise a frame for the wire",
 mins: 12,
-brief: `<p>Write a function that serialises this struct into a byte buffer, little-endian,
-with no padding and no dependence on the compiler's struct layout.</p>
+brief: `
+<p>Turn a struct into bytes for the wire, without depending on how the compiler laid it out.</p>
 <pre>typedef struct {
     uint8_t  type;
     uint16_t seq;
     int32_t  value;
-} msg_t;</pre>
-<p>Signature: <code>int msg_pack(const msg_t *m, uint8_t *out, size_t cap)</code>, returning
-bytes written or a negative error. Then write the matching unpack.</p>`,
+} msg_t;
+
+#define MSG_WIRE_LEN 7          /* you define this */
+
+int msg_pack  (const msg_t *m, uint8_t *out, size_t cap);
+int msg_unpack(const uint8_t *in, size_t len, msg_t *out);</pre>
+<ul>
+<li><code>m</code> the message to serialise.</li>
+<li><code>out</code> (pack) the byte buffer to fill; <code>cap</code> how many bytes it holds.
+It may be smaller than the frame, and that case must not be a buffer overrun.</li>
+<li><code>in</code> (unpack) the received bytes; <code>len</code> how many arrived. It may be
+short, and a short frame is an error rather than something to read past.</li>
+<li><code>out</code> (unpack) where to put the decoded message.</li>
+</ul>
+<p><b>Returns.</b> Both return the number of bytes consumed or produced, which is
+<code>MSG_WIRE_LEN</code>, or a <b>negative</b> error code.</p>
+<p><b>Little-endian, no padding.</b> Write each field with explicit byte shifts, so
+<code>seq</code> is two bytes low first and <code>value</code> is four. <code>memcpy</code> of
+the whole struct is the answer being tested for, and it is wrong: padding and endianness are
+both compiler and target properties, and the receiver may be neither.</p>
+<p>Watch the shifting on <code>value</code>. It is signed, and shifting a negative signed value
+is not something the standard defines.</p>`,
 code: "",
 answer: `<pre>#define MSG_WIRE_LEN  7          /* 1 + 2 + 4, stated explicitly */
 
@@ -1068,11 +1100,31 @@ track: "Embedded C",
 d: 3,
 title: "A byte-at-a-time frame receiver",
 mins: 15,
-brief: `<p>Bytes arrive one at a time from an interrupt. Write a state machine that assembles
-frames of the form:</p>
-<pre>[0xAA] [len] [payload 0..255] [crc_lo] [crc_hi]</pre>
-<p>where the CRC covers len and the payload. It must recover from corruption without getting
-permanently stuck, and must never write outside its buffer.</p>`,
+brief: `
+<p>Bytes arrive one at a time from an interrupt. Assemble them into frames of this form:</p>
+<pre>[0xAA] [len] [payload 0..MAX_PAYLOAD] [crc_lo] [crc_hi]</pre>
+<pre>#define MAX_PAYLOAD 64          /* you choose the number */
+
+typedef struct { ... } rx_t;    /* you define the members */
+
+int rx_byte(rx_t *rx, uint8_t b);
+
+uint16_t crc16(const uint8_t *d, size_t n);   /* provided, and correct */</pre>
+<ul>
+<li><code>rx</code> the receiver's state, one per link, zeroed by the caller before the first
+byte. All the state lives here rather than in statics, so two links do not corrupt each
+other.</li>
+<li><code>b</code> the byte that just arrived.</li>
+<li><code>crc16</code> covers the <b>length byte and the payload</b>, not the 0xAA and not the
+CRC bytes themselves. It is given to you.</li>
+</ul>
+<p><b>Returns.</b> The payload length, 0 or more, on the byte that completes a frame whose CRC
+checks out. <b>-1</b> on every other byte, whether that is a byte in the middle of a frame or a
+frame that failed.</p>
+<p><b>What it has to survive.</b> A <code>len</code> larger than your buffer, because it came
+off the wire and cannot be trusted. Corruption anywhere, without getting permanently stuck, so
+it must be able to return to hunting for 0xAA. And an impossible state, which is a fault rather
+than something to ignore.</p>`,
 code: "",
 answer: `<pre>#define MAX_PAYLOAD 64
 
@@ -1183,10 +1235,25 @@ track: "Embedded C",
 d: 2,
 title: "A wait that cannot hang",
 mins: 8,
-brief: `<p>Write a function that waits for a peripheral's READY bit, given a free-running
-millisecond counter <code>uint32_t now_ms(void)</code> that wraps.</p>
-<p>It must be correct across a counter wrap, must never wait forever, and must return
-something the caller can act on. Explain the comparison you chose.</p>`,
+brief: `
+<p>Wait for a peripheral's READY bit, and make sure the wait cannot become a hang.</p>
+<pre>uint32_t now_ms(void);      /* provided: free-running counter, wraps at 2^32 */
+volatile uint32_t SR;       /* provided: the peripheral's status register */
+#define SR_READY (1u &lt;&lt; 0)
+
+int periph_wait_ready(uint32_t timeout_ms);</pre>
+<ul>
+<li><code>timeout_ms</code> how long to keep polling before giving up. It may be 0, which should
+still test the bit once.</li>
+<li><code>now_ms</code> the millisecond clock. It <b>wraps</b> back to zero every 49 days or so,
+and your comparison has to stay correct across that.</li>
+<li><code>SR</code> the status register. Bit 0 is READY, and it is set by the hardware at some
+point after you start waiting.</li>
+</ul>
+<p><b>Returns.</b> 0 once READY is set, or a negative error code on timeout. Never loop
+forever, and never return without the caller being able to tell the two outcomes apart.</p>
+<p>The comparison is the exercise. Explain why you wrote it the way you did, in terms of what
+happens when the counter wraps between the start of the wait and the end of it.</p>`,
 code: "",
 answer: `<pre>int periph_wait_ready(uint32_t timeout_ms)
 {

@@ -15,13 +15,21 @@ d: 1,
 title: "Set, clear, toggle and test a bit",
 mins: 5,
 brief: `
-<p>Four one-liners. Each takes a register value and a bit number, and must not disturb any
-other bit.</p>
+<p>Four one-liners that each change one bit of a register value and leave every other bit
+alone.</p>
 <pre>uint32_t bit_set   (uint32_t r, unsigned n);
 uint32_t bit_clear (uint32_t r, unsigned n);
 uint32_t bit_toggle(uint32_t r, unsigned n);
 bool     bit_test  (uint32_t r, unsigned n);</pre>
-<p>Nothing else. If you can write these without thinking, half of register work is free.</p>`,
+<ul>
+<li><code>r</code> the current register value.</li>
+<li><code>n</code> which bit to act on, counting from 0 at the least significant end. Assume
+0 to 31.</li>
+</ul>
+<p><b>Returns.</b> The first three return the <b>new</b> register value; they do not modify
+<code>r</code>, which is a copy. <code>bit_test</code> returns true when bit <code>n</code> is
+set.</p>
+<p>If you can write these without thinking, half of register work is free.</p>`,
 answer: `
 <pre>uint32_t bit_set(uint32_t r, unsigned n)    { return r |  (1u &lt;&lt; n); }
 uint32_t bit_clear(uint32_t r, unsigned n)  { return r &amp; ~(1u &lt;&lt; n); }
@@ -82,11 +90,24 @@ d: 2,
 title: "Read and write a register field",
 mins: 6,
 brief: `
-<p>A field of several bits inside a register, given a mask and a shift.</p>
+<p>Read and replace a field of several adjacent bits inside a 32-bit register.</p>
 <pre>uint32_t field_get(uint32_t reg, uint32_t mask, unsigned shift);
 uint32_t field_set(uint32_t reg, uint32_t mask, unsigned shift, uint32_t v);</pre>
-<p><code>field_set</code> returns the new register value with that field replaced and every
-other bit untouched. It must not let an over-large value spill into neighbouring bits.</p>`,
+<ul>
+<li><code>reg</code> the current register value.</li>
+<li><code>mask</code> the bits the field occupies, in place. For a 4-bit field starting at bit
+8 that is <code>0x00000F00</code>.</li>
+<li><code>shift</code> how far the field sits above bit 0. For that example, 8.</li>
+<li><code>v</code> (<code>field_set</code> only) the <b>new value for the field</b>,
+right-justified: 0 to 15 for a 4-bit field, not already shifted into position. It may be larger
+than the field holds, and that case matters.</li>
+</ul>
+<p><b>Returns.</b> <code>field_get</code> gives the field's value right-justified, so
+<code>0x00000A00</code> with that mask and shift gives <code>0xA</code>.</p>
+<p><code>field_set</code> gives a <b>new register value</b> with that field replaced by
+<code>v</code>. Every bit outside the mask must be unchanged, including when the field is being
+set to zero, and a <code>v</code> too large for the field must not spill into the bits above
+it.</p>`,
 answer: `
 <pre>uint32_t field_get(uint32_t reg, uint32_t mask, unsigned shift)
 {
@@ -138,11 +159,23 @@ d: 2,
 title: "A wait that cannot hang",
 mins: 6,
 brief: `
-<p>Poll a function until it says ready, or give up.</p>
-<pre>bool wait_ready(bool (*is_ready)(void), uint32_t timeout_ms,
+<p>Poll a condition until it becomes true, or give up.</p>
+<pre>bool wait_ready(bool (*is_ready)(void),
+                uint32_t timeout_ms,
                 void (*delay_ms)(uint32_t));</pre>
-<p>Return true if it became ready, false if the timeout expired. Poll every 1 ms.</p>
-<p>The structure matters more than the detail: any wait on hardware needs this shape.</p>`,
+<ul>
+<li><code>is_ready</code> a function you call to test the condition. It returns true when the
+thing you are waiting for has happened. Calling it has no side effect you need to worry
+about.</li>
+<li><code>timeout_ms</code> how long to keep trying, in milliseconds. It may be 0, which still
+deserves one look.</li>
+<li><code>delay_ms</code> a function that waits the given number of milliseconds. Call it with
+1 to poll every millisecond.</li>
+</ul>
+<p><b>Returns.</b> true if the condition became true within the timeout, false if it did
+not.</p>
+<p>The structure matters more than the detail: every wait on hardware needs this shape, and the
+thing it replaces is <code>while (!ready) { }</code>.</p>`,
 answer: `
 <pre>bool wait_ready(bool (*is_ready)(void), uint32_t timeout_ms,
                 void (*delay_ms)(uint32_t))
@@ -200,8 +233,15 @@ brief: `
 <p>Two small things that come up constantly.</p>
 <pre>int32_t clamp_i32(int32_t v, int32_t lo, int32_t hi);
 uint8_t add_sat_u8(uint8_t a, uint8_t b);</pre>
-<p><code>clamp_i32</code> confines a value to a range. <code>add_sat_u8</code> adds and sticks
-at 255 rather than wrapping to a small number.</p>`,
+<ul>
+<li><code>v</code> the value to confine; <code>lo</code> and <code>hi</code> the inclusive
+bounds, with <code>lo &lt;= hi</code>. A value exactly on a bound is allowed through.</li>
+<li><code>a</code>, <code>b</code> the two values to add.</li>
+</ul>
+<p><b>Returns.</b> <code>clamp_i32</code> gives <code>v</code> when it is inside the range, and
+the bound it exceeded otherwise. <code>add_sat_u8</code> gives the sum, or <b>255</b> when the
+sum would exceed what a <code>uint8_t</code> holds, rather than wrapping round to a small
+number.</p>`,
 answer: `
 <pre>int32_t clamp_i32(int32_t v, int32_t lo, int32_t hi)
 {
@@ -259,10 +299,18 @@ d: 2,
 title: "Bytes to a value, and back",
 mins: 6,
 brief: `
-<p>Serialisation, in both directions, big-endian.</p>
+<p>Move a 16-bit value between a number and two bytes on the wire, big-endian.</p>
 <pre>uint16_t be16_get(const uint8_t *p);
 void     be16_put(uint8_t *p, uint16_t v);</pre>
-<p>Must be correct on any host, and must work from an unaligned address.</p>`,
+<ul>
+<li><code>p</code> points at two bytes. Big-endian means <code>p[0]</code> is the <b>most</b>
+significant. The address may be <b>unaligned</b>, which rules out one popular wrong answer.</li>
+<li><code>v</code> (<code>be16_put</code> only) the value to write out.</li>
+</ul>
+<p><b>Returns.</b> <code>be16_get</code> gives the assembled value. <code>be16_put</code>
+returns nothing and writes exactly two bytes at <code>p</code>.</p>
+<p>Both must be correct on a big-endian and a little-endian host, without testing which one you
+are on.</p>`,
 answer: `
 <pre>uint16_t be16_get(const uint8_t *p)
 {
@@ -312,14 +360,21 @@ d: 1,
 title: "Propagating an error without losing it",
 mins: 6,
 brief: `
-<p>A sequence of three calls that can each fail. Write it so the first failure stops the
-sequence and the caller learns which error it was.</p>
-<pre>int step_a(void);
-int step_b(void);
-int step_c(void);
+<p>Call three functions in order. Any of them can fail, and the caller needs to know which one
+did.</p>
+<pre>int step_a(void);        /* provided */
+int step_b(void);        /* provided */
+int step_c(void);        /* provided */
 
-int do_sequence(void);      /* 0 on success, the failing step's code otherwise */</pre>
-<p>Each step returns 0 for success and a negative value for failure.</p>`,
+int do_sequence(void);   /* write this */</pre>
+<ul>
+<li>Each step returns <b>0</b> for success, or a <b>negative</b> error code. The codes differ
+between steps, and the caller cares which one it was.</li>
+</ul>
+<p><b>What do_sequence must do.</b> Run the three in order. Stop at the first failure, so a
+later step never runs after an earlier one failed.</p>
+<p><b>Returns.</b> 0 if all three succeeded, otherwise the error code of the step that failed,
+unchanged.</p>`,
 answer: `
 <pre>int do_sequence(void)
 {
@@ -390,11 +445,19 @@ d: 1,
 title: "The three macros, parenthesised properly",
 mins: 5,
 brief: `
-<p>Write these three so they cannot be broken by their arguments.</p>
-<pre>ARRAY_SIZE(a)     how many elements
-MIN(a, b)
-MAX(a, b)</pre>
-<p>They look trivial. The parenthesisation is the entire exercise.</p>`,
+<p>Write these three macros so that no argument can break them.</p>
+<pre>ARRAY_SIZE(a)     /* how many elements are in array a */
+MIN(a, b)         /* the smaller of two values */
+MAX(a, b)         /* the larger of two values */</pre>
+<ul>
+<li><code>a</code> in <code>ARRAY_SIZE</code> is a real array whose declaration is in scope, not
+a pointer.</li>
+<li><code>a</code> and <code>b</code> in <code>MIN</code> and <code>MAX</code> may be any
+expression, including <code>y + 1</code>, and the macro may be used inside a larger expression
+such as <code>MIN(1, 2) * 3</code>.</li>
+</ul>
+<p>They look trivial. The parenthesisation is the entire exercise, and those two usages are what
+it has to survive.</p>`,
 answer: `
 <pre>#define ARRAY_SIZE(a)  (sizeof(a) / sizeof((a)[0]))
 #define MIN(a, b)      (((a) &lt; (b)) ? (a) : (b))
@@ -450,17 +513,28 @@ d: 3,
 title: "The smallest ring buffer that works",
 mins: 8,
 brief: `
-<p>A power-of-two ring buffer, in as few lines as it takes.</p>
-<pre>#define RB_SIZE 16       /* provided, a power of two */
+<p>A byte ring buffer, in as few lines as it takes.</p>
+<pre>#define RB_SIZE 16        /* provided, and a power of two */
 
-typedef struct {
+typedef struct {          /* provided */
     uint8_t  buf[RB_SIZE];
     uint16_t head, tail;
 } rb_t;
 
-bool rb_put(rb_t *rb, uint8_t v);       /* false if full */
-bool rb_get(rb_t *rb, uint8_t *out);    /* false if empty */</pre>
-<p>Sacrifice one slot to tell full from empty. No modulo, no counter.</p>`,
+bool rb_put(rb_t *rb, uint8_t v);
+bool rb_get(rb_t *rb, uint8_t *out);</pre>
+<ul>
+<li><code>rb</code> the buffer, already zeroed by the caller so <code>head</code> and
+<code>tail</code> start at 0.</li>
+<li><code>v</code> (<code>rb_put</code>) the byte to store.</li>
+<li><code>out</code> (<code>rb_get</code>) where to write the byte that comes out. Only write
+to it when there was something to take.</li>
+</ul>
+<p><b>Returns.</b> <code>rb_put</code> is true if the byte was stored, false if the buffer was
+full, and it must not overwrite anything. <code>rb_get</code> is true if a byte was taken, false
+if the buffer was empty.</p>
+<p>Sacrifice one slot so that full and empty are distinguishable, so the buffer holds
+<code>RB_SIZE - 1</code> bytes. No modulo, and no separate count.</p>`,
 answer: `
 <pre>bool rb_put(rb_t *rb, uint8_t v)
 {
@@ -524,10 +598,17 @@ d: 2,
 title: "Counts to units, without overflowing",
 mins: 6,
 brief: `
-<p>Convert a 12-bit ADC reading to millivolts.</p>
-<pre>uint32_t counts_to_mv(uint16_t counts, uint32_t vref_mv);
-/* counts is 0..4095, full scale reads vref_mv */</pre>
-<p>Get the arithmetic order right, and say what happens to the fraction.</p>`,
+<p>Convert a raw ADC reading into millivolts.</p>
+<pre>uint32_t counts_to_mv(uint16_t counts, uint32_t vref_mv);</pre>
+<ul>
+<li><code>counts</code> the converter's output, 0 to 4095 for a 12-bit part.</li>
+<li><code>vref_mv</code> the reference voltage in millivolts, so 3300 for a 3.3 V reference. A
+full-scale reading corresponds to this voltage.</li>
+</ul>
+<p><b>Returns.</b> The input voltage in millivolts. 0 counts is 0 mV, and 4095 counts is
+<code>vref_mv</code>.</p>
+<p>Integer arithmetic only. Get the order of operations right, and be ready to say what happens
+to the fractional part.</p>`,
 answer: `
 <pre>uint32_t counts_to_mv(uint16_t counts, uint32_t vref_mv)
 {
@@ -579,18 +660,26 @@ d: 3,
 title: "The transport struct, from memory",
 mins: 8,
 brief: `
-<p>The pattern that makes a driver portable and testable. Write it from memory.</p>
-<pre>/* a transport the driver calls, and a context it passes back */
-typedef struct { ... } dev_io_t;
+<p>The pattern that makes a driver both portable and testable. Write it from memory.</p>
+<pre>typedef struct { ... } dev_io_t;     /* you define the members */
 
-typedef struct dev_s dev_t;              /* opaque */
+typedef struct dev_s dev_t;          /* opaque to callers */
 
 int dev_init(const dev_io_t *io, dev_t **out);</pre>
-<p>Fill in the transport struct and write <code>dev_init</code>. It must reject a NULL argument
-or a NULL function pointer, copy the transport into the device, and leave <code>*out</code>
-untouched on failure. Return 0 or a negative error.</p>
-<p>Use <code>calloc</code> for the device. <code>DEV_EINVAL</code> and <code>DEV_ENOMEM</code>
-are provided.</p>`,
+<ul>
+<li><code>dev_io_t</code> is the transport the driver calls to reach the hardware. Give it
+function pointers for a register <b>read</b>, a register <b>write</b> and a <b>delay</b>, plus
+one more member that lets an implementation carry its own state.</li>
+<li><code>io</code> the caller's filled-in transport. It may live on the caller's stack and
+disappear as soon as <code>dev_init</code> returns.</li>
+<li><code>out</code> where to put the handle on success. Leave it <b>untouched</b> on every
+failure path.</li>
+</ul>
+<p><b>What dev_init must do.</b> Reject a NULL <code>io</code> or <code>out</code>, and reject
+an <code>io</code> with any NULL function pointer, before allocating anything. Then allocate the
+device with <code>calloc</code>, store the transport, and hand back the handle.</p>
+<p><b>Returns.</b> 0 on success, <code>DEV_EINVAL</code> for a bad argument, or
+<code>DEV_ENOMEM</code> if the allocation failed. Both constants are provided.</p>`,
 answer: `
 <pre>typedef struct {
     int  (*read) (void *ctx, uint8_t reg, uint8_t *buf, size_t len);

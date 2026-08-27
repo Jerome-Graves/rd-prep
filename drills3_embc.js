@@ -14,8 +14,15 @@ mins: 8,
 brief: `
 <p>The oldest warm-up there is. Reverse a null-terminated string <b>in place</b>, with no
 allocation and no second buffer.</p>
-<p>Handle the empty string and the single character. Do not write past the terminator, and do
-not move it.</p>`,
+<pre>void str_reverse(char *s);</pre>
+<ul>
+<li><code>s</code> the string to reverse. It is writable, and it is null-terminated. It may be
+the empty string <code>""</code>, or a single character.</li>
+</ul>
+<p><b>Returns.</b> Nothing. The effect is that the characters of <code>s</code>, up to but not
+including the terminator, are in reverse order.</p>
+<p>Do not write past the terminator, and do not move it: <code>"abc"</code> becomes
+<code>"cba"</code>, still three characters plus the terminator in the fourth byte.</p>`,
 answer: `
 <pre>void str_reverse(char *s)
 {
@@ -65,9 +72,16 @@ d: 1,
 title: "Count the set bits",
 mins: 10,
 brief: `
-<p>Return how many bits are set in a 32-bit value.</p>
-<p>Write the naive version first so it is correct, then improve it. Say what each version
-costs.</p>`,
+<p>Count how many bits are set in a 32-bit value.</p>
+<pre>int popcount32(uint32_t v);</pre>
+<ul>
+<li><code>v</code> the value to inspect. Any value, including 0 and <code>0xFFFFFFFF</code>.</li>
+</ul>
+<p><b>Returns.</b> The number of 1 bits, so 0 to 32. <code>popcount32(0)</code> is 0 and
+<code>popcount32(7)</code> is 3.</p>
+<p>Write the obvious version first so it is correct, then improve it. Be ready to say what each
+version costs: the naive loop is 32 iterations whatever the input, and Kernighan's
+<code>v &amp;= v - 1</code> runs once per set bit.</p>`,
 answer: `
 <h3>The three answers, in the order to give them</h3>
 <pre>/* 1. the obvious one: 32 iterations, always */
@@ -250,12 +264,23 @@ d: 2,
 title: "Parse an integer, and reject what you should",
 mins: 14,
 brief: `
-<p><code>bool parse_i32(const char *s, int32_t *out)</code>. Return true and write the value
-only if the whole string is a valid decimal integer that fits.</p>
-<p>Reject: the empty string, anything with trailing characters, and anything that overflows.
-Accept an optional leading <code>+</code> or <code>-</code>. Do not accept leading
-whitespace.</p>
-<p>This is the question behind "why not just use atoi".</p>`,
+<p>Parse a decimal integer out of a string, and reject everything you should. This is the
+question behind "why not just use <code>atoi</code>".</p>
+<pre>bool parse_i32(const char *s, int32_t *out);</pre>
+<ul>
+<li><code>s</code> the string to parse. Null-terminated, and it may be empty.</li>
+<li><code>out</code> where to put the parsed value. Write to it <b>only</b> on success, so a
+caller that ignores the return value at least keeps its old value rather than a half-parsed
+one.</li>
+</ul>
+<p><b>Returns.</b> true only if the <b>whole</b> string is a valid decimal integer that fits in
+an <code>int32_t</code>. false otherwise, with <code>*out</code> untouched.</p>
+<p><b>Accept</b> an optional leading <code>+</code> or <code>-</code> followed by at least one
+digit. <b>Reject</b> the empty string, a lone sign, leading whitespace, and anything with
+trailing characters such as <code>"12abc"</code> or <code>"12 "</code>.</p>
+<p><b>Reject overflow</b> too. <code>"2147483648"</code> is one past <code>INT32_MAX</code> and
+must fail, and <code>"-2147483648"</code> is exactly <code>INT32_MIN</code> and must succeed.
+That asymmetry is the hard part.</p>`,
 answer: `
 <pre>bool parse_i32(const char *s, int32_t *out)
 {
@@ -314,10 +339,18 @@ d: 2,
 title: "Reverse the bits in a word",
 mins: 10,
 brief: `
-<p><code>uint32_t reverse_bits32(uint32_t v)</code>: bit 0 becomes bit 31, bit 1 becomes bit 30,
-and so on.</p>
-<p>Give the loop version, then the divide-and-conquer version. This one turns up in CRC work,
-in FFT bit-reversal and in reading a peripheral wired backwards.</p>`,
+<p>Reverse the order of the bits in a word: bit 0 becomes bit 31, bit 1 becomes bit 30, and so
+on.</p>
+<pre>uint32_t reverse_bits32(uint32_t v);</pre>
+<ul>
+<li><code>v</code> the value whose bits are to be reversed.</li>
+</ul>
+<p><b>Returns.</b> The reversed value. <code>reverse_bits32(1)</code> is
+<code>0x80000000</code>, and <code>reverse_bits32(0xFFFFFFFF)</code> is itself.</p>
+<p>Give the 32-iteration loop first, then the divide-and-conquer version that swaps
+neighbouring bits, then pairs, then nibbles, then bytes, then halves. Five masked steps.</p>
+<p>It turns up in CRC work, in FFT bit-reversal, and any time a peripheral is wired
+backwards.</p>`,
 answer: `
 <pre>/* the loop: 32 iterations, easy to get right */
 uint32_t reverse_bits32(uint32_t v)
@@ -434,11 +467,23 @@ d: 2,
 title: "Integer to string, without printf",
 mins: 12,
 brief: `
-<p><code>size_t u32_to_str(uint32_t v, char *buf, size_t cap)</code>: write the decimal
-representation with a terminator, and return the number of characters written excluding the
-terminator. Return 0 and write nothing if it will not fit.</p>
-<p>No <code>sprintf</code>. This is what you write when printf's 25 kB is not available, and it
-is a fair question for exactly that reason.</p>`,
+<p>Convert an unsigned integer to its decimal text, without <code>sprintf</code>. This is what
+you write when printf's 25 kB will not fit, which is a fair reason to be asked.</p>
+<pre>size_t u32_to_str(uint32_t v, char *buf, size_t cap);</pre>
+<ul>
+<li><code>v</code> the value to convert, 0 to 4294967295. Zero must produce
+<code>"0"</code>.</li>
+<li><code>buf</code> the caller's buffer to write into.</li>
+<li><code>cap</code> how many bytes <code>buf</code> holds, <b>including</b> room for the
+terminator. So the longest possible result, 10 digits, needs <code>cap</code> of at least
+11.</li>
+</ul>
+<p><b>Returns.</b> The number of characters written <b>excluding</b> the terminator, so
+<code>u32_to_str(42, b, 8)</code> returns 2 and leaves <code>"42"</code> in the buffer.</p>
+<p>If the result will not fit, return 0 and write <b>nothing at all</b>, rather than a truncated
+string.</p>
+<p>Digits come out least significant first, so you either build backwards from the end or
+reverse at the end. Say which you chose.</p>`,
 answer: `
 <pre>size_t u32_to_str(uint32_t v, char *buf, size_t cap)
 {
