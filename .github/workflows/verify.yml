@@ -1,0 +1,25 @@
+# The site has no build step, so nothing would otherwise catch a broken data
+# file until it failed silently in someone's browser. This runs the content
+# verifier on every push and pull request.
+name: verify
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: content checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # No dependencies to install. That is the point.
+      - name: Verify site content
+        run: node tools/verify.js

@@ -1,0 +1,21 @@
+# This project has no build step and no dependencies. Anything below is either
+# an editor's doing or something that wandered in from a local experiment.
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local tooling
+.claude/
+node_modules/
+package-lock.json
+
+# Scratch work
+tmp/
+scratch/
+*.log
