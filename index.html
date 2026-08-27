@@ -421,7 +421,15 @@
             padding-top: 7px; width: 100%; }
         #glosspop .gp-link:hover { text-decoration: underline; }
 
-        .lref { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 8px; }
+        .lrefrow { margin-top: 14px; }
+        /* qualified with .btn so this wins regardless of source order: the
+           plain .btn rule is defined further down the file */
+        .btn.lessonbtn {
+            border-color: var(--accent); color: var(--accent); font-weight: 600;
+            max-width: 100%; white-space: normal; text-align: left; line-height: 1.35;
+        }
+        .btn.lessonbtn:hover { background: var(--accent); color: var(--bg); }
+        .lref { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
         .lref > summary {
             cursor: pointer; color: var(--accent); font-weight: 600; font-size: 14px;
             list-style: none; padding: 4px 0; user-select: none;
@@ -943,10 +951,16 @@
         function lessonRef(topicId, track) {
             const l = byId[topicLesson(topicId, track)];
             if (!l) return "";
-            return '<details class="lref"><summary>Read the lesson: ' + l.title + '</summary>'
-                + '<div class="lref-body">' + l.body + '</div>'
-                + '<a class="lref-open" href="#lesson/' + l.id + '" target="_blank">'
-                + 'Open the full lesson in a new tab &rarr;</a></details>';
+            // A button, not a link buried in the dropdown. It opens a new tab on
+            // purpose: the test object survives a route change, but renderTestQ
+            // would redraw the question unanswered and recordResult would count
+            // your second answer as well as your first.
+            return '<div class="lrefrow">'
+                + '<a class="btn lessonbtn" href="#lesson/' + l.id + '"'
+                + ' target="_blank" rel="noopener">Go to the lesson: '
+                + esc(l.title) + ' &rarr;</a></div>'
+                + '<details class="lref"><summary>Or read it here, without leaving the test</summary>'
+                + '<div class="lref-body">' + l.body + '</div></details>';
         }
 
         // ---------- nav ----------
