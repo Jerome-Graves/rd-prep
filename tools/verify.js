@@ -124,25 +124,50 @@ else ok("all lesson quizzes are well formed");
 
 // ------------------------------------------------------ answer-length bias
 // If the correct option is reliably the longest, the bank is answerable without
-// knowing anything. Chance is 25%. Reported per track so a regression is visible
-// before it spreads.
+// knowing anything: you just pick the long one. Chance is 25%.
+//
+// Two numbers per track. "longest" counts a tie for top length, which is not
+// actually exploitable (you cannot pick the longest when two share the top
+// spot), so "strict" counts only outright-longest and is the honest figure.
+//
+// This is a gate, not a report. Too high and "pick the longest" beats knowing
+// the material; too low and "avoid the longest" does, which is the same tell
+// inverted. Both directions fail.
 {
-    let n = 0, longest = 0;
-    const perTrack = {};
+    const HIGH = 45, LOW = 8;
+    let n = 0, loose = 0, strictAll = 0;
+    const rows = [];
     for (const k in B) {
-        let tn = 0, tl = 0;
+        let tn = 0, tl = 0, ts = 0;
         for (const q of B[k]) {
             const len = q.o.map(strip).map(t => t.length);
-            if (len[q.a] === Math.max(...len)) { longest++; tl++; }
+            const top = Math.max(...len);
+            if (len[q.a] === top) {
+                loose++; tl++;
+                if (len.filter(v => v === top).length === 1) { strictAll++; ts++; }
+            }
             n++; tn++;
         }
-        perTrack[k] = Math.round(100 * tl / tn);
+        rows.push([k, Math.round(100 * tl / tn), Math.round(100 * ts / tn)]);
     }
-    const overall = Math.round(100 * longest / n);
-    console.log("\n      answer-length bias, correct option is the longest (chance 25%):");
-    Object.keys(perTrack).sort((a, b) => perTrack[b] - perTrack[a])
-        .forEach(k => console.log("        " + String(perTrack[k]).padStart(3) + "%  " + k));
-    console.log("        " + String(overall).padStart(3) + "%  overall\n");
+    rows.sort((a, b) => b[2] - a[2]);
+
+    console.log("\n      answer-length bias (chance 25%, gate " + LOW + "-" + HIGH + "% strict):");
+    console.log("        longest  strict  track");
+    for (const [k, l, s] of rows) {
+        console.log("        " + String(l + "%").padStart(7) + String(s + "%").padStart(8) + "  " + k);
+    }
+    console.log("        " + String(Math.round(100 * loose / n) + "%").padStart(7)
+        + String(Math.round(100 * strictAll / n) + "%").padStart(8) + "  overall\n");
+
+    const off = rows.filter(([, , s]) => s > HIGH || s < LOW);
+    if (off.length) {
+        for (const [k, , s] of off) {
+            fail(k + " answer-length bias is " + s + "%, outside " + LOW + "-" + HIGH + "% (chance is 25%)");
+        }
+    } else {
+        ok("no track is answerable from option length alone");
+    }
 }
 
 // -------------------------------------------------------------- glossary
