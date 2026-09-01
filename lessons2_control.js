@@ -5,6 +5,7 @@ LESSONS.push(
 {
 id: "ct-freq",
 track: "Control",
+sub: "Classical control",
 title: "Frequency response thinking",
 mins: 30,
 body: `
@@ -75,6 +76,7 @@ a: "Step responses show you the symptom; the frequency view shows you the cause 
 {
 id: "ct-sysid",
 track: "Control",
+sub: "Estimation",
 title: "System identification for practitioners",
 mins: 30,
 body: `
@@ -154,6 +156,7 @@ a: "First I would open the loop and characterise steady behaviour: a few constan
 {
 id: "ct-ff",
 track: "Control",
+sub: "Classical control",
 title: "Feedforward and disturbance rejection",
 mins: 25,
 body: `
@@ -230,6 +233,7 @@ a: "Tracking lag that grows with speed and acceleration is the signature of a lo
 {
 id: "ct-lqr",
 track: "Control",
+sub: "Discrete and state space",
 title: "Optimal control concepts: LQR and MPC",
 mins: 30,
 body: `
@@ -307,6 +311,7 @@ a: "I reach for MPC when constraints genuinely shape the problem: an actuator th
 {
 id: "ct-nonlinear",
 track: "Control",
+sub: "Control in practice",
 title: "Nonlinear realities",
 mins: 30,
 body: `
@@ -387,6 +392,7 @@ a: "That is friction at low speed. Near the target the drive force falls below t
 {
 id: "ct-cascade",
 track: "Control",
+sub: "Classical control",
 title: "Cascade and multi-loop control",
 mins: 25,
 body: `
@@ -476,6 +482,7 @@ a: "Each loop turns a messy layer of physics into a clean actuator for the layer
 {
 id: "ct-adaptive",
 track: "Control",
+sub: "Control in practice",
 title: "Adaptive, scheduled and learned control",
 mins: 30,
 body: `
@@ -557,6 +564,7 @@ a: "I would start by asking what specifically the current controller fails at, b
 {
 id: "ct-faults",
 track: "Control",
+sub: "Control in practice",
 title: "Fault handling and safe states",
 mins: 30,
 body: `

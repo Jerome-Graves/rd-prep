@@ -6,6 +6,7 @@ LESSONS.push(
 {
 id: "cm-hash",
 track: "CS & Maths",
+sub: "Data structures and algorithms",
 title: "Hash maps and honest complexity",
 mins: 25,
 body: `
@@ -74,6 +75,7 @@ a: "A hash function maps the key to an integer, that integer modulo the table si
 {
 id: "cm-memory",
 track: "CS & Maths",
+sub: "Systems",
 title: "Memory, cache and locality",
 mins: 30,
 body: `
@@ -143,6 +145,7 @@ a: "Traversal order against memory layout. MATLAB is column-major and C++ is row
 {
 id: "cm-concurrency",
 track: "CS & Maths",
+sub: "Systems",
 title: "Concurrency concepts that survive interviews",
 mins: 30,
 body: `
@@ -212,6 +215,7 @@ a: "Two threads blocked on mutexes is the deadlock signature, so first I confirm
 {
 id: "cm-linalg",
 track: "CS & Maths",
+sub: "Numerical methods",
 title: "Linear algebra for instrument software",
 mins: 30,
 body: `
@@ -279,6 +283,7 @@ a: "Both images fit their data, so this points at ill-conditioning rather than a
 {
 id: "cm-float",
 track: "CS & Maths",
+sub: "Numerical methods",
 title: "Floating point without superstition",
 mins: 30,
 body: `
@@ -348,6 +353,7 @@ a: "I would explain that bit-identical was never the right target. Floating poin
 {
 id: "cm-stats",
 track: "CS & Maths",
+sub: "Statistics and learning",
 title: "Statistics for experiments",
 mins: 30,
 body: `

@@ -6,6 +6,7 @@ LESSONS.push(
 {
 id: "ac-transducers",
 track: "Acoustics",
+sub: "Transducers and beams",
 title: "Piezoelectric transducers inside out",
 mins: 28,
 body: `
@@ -78,6 +79,7 @@ a: "The spike strains the poled ceramic through the inverse piezoelectric effect
 {
 id: "ac-beams",
 track: "Acoustics",
+sub: "Transducers and beams",
 title: "Beams, near field and focusing",
 mins: 28,
 body: `
@@ -150,6 +152,7 @@ a: "I start from the required resolution and depth. Lateral resolution is roughl
 {
 id: "ac-waves",
 track: "Acoustics",
+sub: "Waves and propagation",
 title: "Wave types, refraction and mode conversion",
 mins: 28,
 body: `
@@ -221,6 +224,7 @@ a: "In anisotropic media the stiffness, and therefore velocity, depends on propa
 {
 id: "ac-attenuation",
 track: "Acoustics",
+sub: "Waves and propagation",
 title: "Attenuation and scattering",
 mins: 27,
 body: `
@@ -296,6 +300,7 @@ a: "I treat it as an attenuation budget problem. First I estimate or measure the
 {
 id: "ac-measurement",
 track: "Acoustics",
+sub: "Measurement and imaging",
 title: "Measurement modes: pulse-echo to C-scan",
 mins: 28,
 body: `
@@ -372,6 +377,7 @@ a: "This is a C-scan problem. I would use pulse-echo with an immersion or wheel-
 {
 id: "ac-doppler",
 track: "Acoustics",
+sub: "Measurement and imaging",
 title: "Doppler methods",
 mins: 27,
 body: `

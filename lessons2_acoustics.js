@@ -7,6 +7,7 @@ LESSONS.push(
 {
 id: "ac-radiation",
 track: "Acoustics",
+sub: "Transducers and beams",
 title: "Radiation, directivity and sources",
 mins: 25,
 body: `
@@ -80,6 +81,7 @@ a: "Beamwidth is roughly lambda over aperture, so I have two levers: shorten the
 {
 id: "ac-nonlinear",
 track: "Acoustics",
+sub: "Waves and propagation",
 title: "Nonlinear acoustics and harmonic imaging",
 mins: 30,
 body: `
@@ -151,6 +153,7 @@ a: "Transmitting at 2f directly would double the attenuation on both legs of the
 {
 id: "ac-cavitation",
 track: "Acoustics",
+sub: "Applications",
 title: "Cavitation and acoustic streaming",
 mins: 30,
 body: `
@@ -226,6 +229,7 @@ a: "First I listen: I would put a passive receiver in the tank and look at the s
 {
 id: "ac-guided",
 track: "Acoustics",
+sub: "Waves and propagation",
 title: "Guided waves and plate modes",
 mins: 30,
 body: `
@@ -294,6 +298,7 @@ a: "I recommend guided waves when the problem is coverage: long runs of pipe or 
 {
 id: "ac-imaging",
 track: "Acoustics",
+sub: "Measurement and imaging",
 title: "Image formation: delay laws to TFM",
 mins: 30,
 body: `
@@ -364,6 +369,7 @@ a: "The economics of the two fields differ. NDT inspects a static component: fra
 {
 id: "ac-inverse",
 track: "Acoustics",
+sub: "Measurement and imaging",
 title: "Inverse problems in ultrasound",
 mins: 30,
 body: `
@@ -435,6 +441,7 @@ a: "Our measurements do not contain enough information to pin down every pixel: 
 {
 id: "ac-airborne",
 track: "Acoustics",
+sub: "Applications",
 title: "Airborne ultrasound and levitation engineering",
 mins: 30,
 body: `
@@ -516,6 +523,7 @@ a: "Per-channel phase calibration. Commodity transducers ship with phase spreads
 {
 id: "ac-safety",
 track: "Acoustics",
+sub: "Applications",
 title: "Intensity metrics and safety",
 mins: 25,
 body: `

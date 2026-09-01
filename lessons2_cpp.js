@@ -6,6 +6,7 @@ LESSONS.push(
 {
 id: "cpp-errors",
 track: "C++",
+sub: "Engineering practice",
 title: "Error handling: exceptions, codes and expected",
 mins: 30,
 body: `
@@ -87,6 +88,7 @@ a: "I would set one policy per environment and write it down. The firmware build
 {
 id: "cpp-lambdas",
 track: "C++",
+sub: "The language",
 title: "Lambdas, callables and std::function",
 mins: 25,
 body: `
@@ -166,6 +168,7 @@ a: "First I would measure, because the review should be driven by numbers, not t
 {
 id: "cpp-constexpr",
 track: "C++",
+sub: "The language",
 title: "Compile-time C++",
 mins: 25,
 body: `
@@ -241,6 +244,7 @@ a: "Mostly yes, incrementally. I would start with the tables whose generators ar
 {
 id: "cpp-strings",
 track: "C++",
+sub: "Library and memory",
 title: "Strings, string_view and text",
 mins: 25,
 body: `
@@ -316,6 +320,7 @@ a: "The core problem is that failures are invisible: atoi returns zero on garbag
 {
 id: "cpp-build",
 track: "C++",
+sub: "Engineering practice",
 title: "Builds, linkage and the ODR",
 mins: 30,
 body: `
@@ -394,6 +399,7 @@ a: "I would slow it down and read the error, because the linker tells you the ex
 {
 id: "cpp-perf",
 track: "C++",
+sub: "Engineering practice",
 title: "Performance engineering and benchmarking",
 mins: 30,
 body: `
@@ -468,6 +474,7 @@ a: "I would ask for the profile first, because the claim is testable. We would b
 {
 id: "cpp-api",
 track: "C++",
+sub: "Engineering practice",
 title: "API design that resists misuse",
 mins: 25,
 body: `
@@ -543,6 +550,7 @@ a: "I would wrap it in a thin C++ layer rather than rewrite it. First, ownership
 {
 id: "cpp-testing",
 track: "C++",
+sub: "Engineering practice",
 title: "Testing C++",
 mins: 30,
 body: `

@@ -5,6 +5,7 @@ LESSONS.push(
 {
 id: "el-mosfets",
 track: "Electronics",
+sub: "Power and drive",
 title: "MOSFETs as switches and drivers",
 mins: 30,
 body: `
@@ -79,6 +80,7 @@ a: "Conduction loss is only half the budget, so I would look at switching loss f
 {
 id: "el-comparators",
 track: "Electronics",
+sub: "Analogue front ends",
 title: "Comparators, hysteresis and thresholds",
 mins: 25,
 body: `
@@ -151,6 +153,7 @@ a: "I would use a micropower comparator with an internal reference, or a referen
 {
 id: "el-precision",
 track: "Electronics",
+sub: "Analogue front ends",
 title: "Precision analogue design",
 mins: 30,
 body: `
@@ -230,6 +233,7 @@ a: "The lid changes the thermal environment, so my first suspects are thermal. I
 {
 id: "el-emc",
 track: "Electronics",
+sub: "Board level",
 title: "EMC and EMI: pass first time",
 mins: 30,
 body: `
@@ -306,6 +310,7 @@ a: "160 MHz is almost certainly a cable resonance driven by common mode, not a t
 {
 id: "el-protection",
 track: "Electronics",
+sub: "Board level",
 title: "Protection circuits",
 mins: 25,
 body: `
@@ -384,6 +389,7 @@ a: "Vehicle power is hostile: reverse jumps, load dump transients, and live plug
 {
 id: "el-clocks",
 track: "Electronics",
+sub: "Digital and interfacing",
 title: "Crystals, oscillators and timing",
 mins: 25,
 body: `
@@ -458,6 +464,7 @@ a: "First I would confirm the hypothesis: put failing units in a thermal chamber
 {
 id: "el-motor-drive",
 track: "Electronics",
+sub: "Power and drive",
 title: "Motor drive electronics",
 mins: 30,
 body: `
@@ -543,6 +550,7 @@ a: "Two suspects stand out. First, bus pumping: hard braking regenerates the loa
 {
 id: "el-layout",
 track: "Electronics",
+sub: "Board level",
 title: "PCB layout for mixed signal",
 mins: 30,
 body: `

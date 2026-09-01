@@ -5,6 +5,7 @@ LESSONS.push(
 {
 id: "ct-stability",
 track: "Control",
+sub: "Classical control",
 title: "Stability and margins by intuition",
 mins: 25,
 body: `
@@ -78,6 +79,7 @@ a: "The resonance adds a rapid phase drop and a gain peak near 40 Hz, so as I ra
 {
 id: "ct-discrete",
 track: "Control",
+sub: "Discrete and state space",
 title: "Discretisation and sample-rate choices",
 mins: 25,
 body: `
@@ -150,6 +152,7 @@ a: "I would expect a large loss of phase margin: the sample rate drops tenfold, 
 {
 id: "ct-statespace",
 track: "Control",
+sub: "Discrete and state space",
 title: "State space, controllability and observers",
 mins: 30,
 body: `
@@ -228,6 +231,7 @@ a: "This is an observability problem before it is a control problem. The states 
 {
 id: "ct-fusion",
 track: "Control",
+sub: "Estimation",
 title: "Sensor fusion beyond the Kalman filter",
 mins: 30,
 body: `
@@ -302,6 +306,7 @@ a: "I would start with a complementary filter and promote to an EKF only when a 
 {
 id: "ct-motion",
 track: "Control",
+sub: "Control in practice",
 title: "Motion control and trajectory generation",
 mins: 30,
 body: `
@@ -378,6 +383,7 @@ a: "First I would look at the deceleration corner: if the profile is trapezoidal
 {
 id: "ct-robust",
 track: "Control",
+sub: "Control in practice",
 title: "Saturation, windup and staying out of trouble",
 mins: 30,
 body: `

@@ -6,6 +6,7 @@ LESSONS.push(
 {
 id: "dsp-convolution",
 track: "DSP",
+sub: "Sampling and transforms",
 title: "Convolution, correlation and matched filtering",
 mins: 25,
 body: `
@@ -77,6 +78,7 @@ a: "Because detection is bought with energy, not amplitude, and amplitude is wha
 {
 id: "dsp-multirate",
 track: "DSP",
+sub: "Multirate and fixed point",
 title: "Decimation, interpolation and multirate",
 mins: 25,
 body: `
@@ -145,6 +147,7 @@ a: "I would decimate by 4 to 10 MS per second, cutting storage fourfold while ke
 {
 id: "dsp-noise",
 track: "DSP",
+sub: "Detection and estimation",
 title: "dB, SNR and noise budgets",
 mins: 25,
 body: `
@@ -214,6 +217,7 @@ a: "I start at the converter: an ideal 12-bit ADC gives about 74 dB from full sc
 {
 id: "dsp-spectral",
 track: "DSP",
+sub: "Sampling and transforms",
 title: "Spectral estimation and averaging",
 mins: 25,
 body: `
@@ -281,6 +285,7 @@ a: "First I explain why it is grassy: a single periodogram has roughly 100 perce
 {
 id: "dsp-timing",
 track: "DSP",
+sub: "Detection and estimation",
 title: "Time-delay estimation and envelopes",
 mins: 30,
 body: `

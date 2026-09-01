@@ -7,6 +7,7 @@ LESSONS.push(
 {
 id: "rtl-arith",
 track: "RTL & Verilog",
+sub: "Design",
 title: "Datapath arithmetic in fabric",
 mins: 30,
 body: `
@@ -86,6 +87,7 @@ a: "I would register the data and coefficient first, multiply into a 32-bit sign
 {
 id: "rtl-fifo",
 track: "RTL & Verilog",
+sub: "Design",
 title: "FIFOs, handshakes and flow control",
 mins: 30,
 body: `
@@ -162,6 +164,7 @@ a: "I would suspect broken backpressure before anything else, because that is ex
 {
 id: "rtl-axi",
 track: "RTL & Verilog",
+sub: "Interfaces and systems",
 title: "Bus interfaces: the AXI-stream mental model",
 mins: 25,
 body: `
@@ -245,6 +248,7 @@ a: "I would put the sample path on AXI-Stream, because a filter is order-based d
 {
 id: "rtl-dspfpga",
 track: "RTL & Verilog",
+sub: "Interfaces and systems",
 title: "DSP on FPGA",
 mins: 30,
 body: `
@@ -323,6 +327,7 @@ a: "I start from the ratio of fabric clock to sample rate, because that number i
 {
 id: "rtl-soc",
 track: "RTL & Verilog",
+sub: "Interfaces and systems",
 title: "SoCs and processor integration",
 mins: 30,
 body: `
@@ -404,6 +409,7 @@ a: "My rule is that fabric buys determinism, parallelism and rate, and the CPU b
 {
 id: "rtl-constraints",
 track: "RTL & Verilog",
+sub: "Verification and flow",
 title: "Constraints and timing sign-off",
 mins: 30,
 body: `
@@ -484,6 +490,7 @@ a: "Zero negative slack only means the paths the tool was asked about are met, s
 {
 id: "rtl-lint-formal",
 track: "RTL & Verilog",
+sub: "Verification and flow",
 title: "Lint, CDC checks and formal basics",
 mins: 30,
 body: `
@@ -572,6 +579,7 @@ a: "I aim formal at control logic where the dangerous stimulus is the one nobody
 {
 id: "rtl-flow",
 track: "RTL & Verilog",
+sub: "Verification and flow",
 title: "From spec to bitstream",
 mins: 30,
 body: `

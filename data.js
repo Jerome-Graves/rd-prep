@@ -8,6 +8,7 @@ const LESSONS = [
 {
 id: "raii",
 track: "C++",
+sub: "The language",
 title: "RAII and ownership",
 mins: 25,
 body: `
@@ -68,6 +69,7 @@ a: "RAII is free at runtime: the destructor is the same release code we would wr
 {
 id: "move",
 track: "C++",
+sub: "The language",
 title: "Move semantics, copies and references",
 mins: 25,
 body: `
@@ -129,6 +131,7 @@ a: "Returning by value is fine in modern C++. Either return-value optimisation c
 {
 id: "stl",
 track: "C++",
+sub: "Library and memory",
 title: "STL containers and their costs",
 mins: 25,
 body: `
@@ -192,6 +195,7 @@ a: "If I only need uniqueness and can tolerate unordered results, unordered_set 
 {
 id: "threads",
 track: "C++",
+sub: "Concurrency",
 title: "Threads, races and atomics",
 mins: 30,
 body: `
@@ -261,6 +265,7 @@ a: "First: is every access to the queue actually under the same lock, including 
 {
 id: "sampling",
 track: "DSP",
+sub: "Sampling and transforms",
 title: "Sampling, Nyquist and aliasing",
 mins: 25,
 body: `
@@ -316,6 +321,7 @@ a: "First suspicion is an alias. I would change the sampling rate slightly: a re
 {
 id: "fft",
 track: "DSP",
+sub: "Sampling and transforms",
 title: "FFT, windows and leakage",
 mins: 25,
 body: `
@@ -374,6 +380,7 @@ a: "A 10 microsecond record has an intrinsic resolution of 1/T = 100 kHz; nothin
 {
 id: "filters",
 track: "DSP",
+sub: "Filters",
 title: "FIR vs IIR, and causal filtering",
 mins: 25,
 body: `
@@ -434,6 +441,7 @@ a: "filtfilt is zero-phase and non-causal: it uses future samples, so features d
 {
 id: "impedance",
 track: "Acoustics",
+sub: "Waves and propagation",
 title: "Impedance, reflection and attenuation",
 mins: 25,
 body: `
@@ -492,6 +500,7 @@ a: "Resolution scales with wavelength: lambda = c/f, so higher frequency means s
 {
 id: "arrays",
 track: "Acoustics",
+sub: "Transducers and beams",
 title: "Phased arrays and acoustic levitation",
 mins: 30,
 body: `
@@ -549,6 +558,7 @@ a: "Because the physics and the mathematics are the same machinery run in opposi
 {
 id: "pid",
 track: "Control",
+sub: "Classical control",
 title: "PID by intuition",
 mins: 25,
 body: `
@@ -606,6 +616,7 @@ a: "Classic integrator windup. During the long climb the actuator sits saturated
 {
 id: "kalman",
 track: "Control",
+sub: "Estimation",
 title: "Kalman filters without tears",
 mins: 30,
 body: `
@@ -673,6 +684,7 @@ a: "Because they fail differently and drift differently. The IMU gyro is superb 
 {
 id: "frontend",
 track: "Electronics",
+sub: "Analogue front ends",
 title: "Sensor front ends: op-amps to ADC",
 mins: 30,
 body: `
@@ -737,6 +749,7 @@ a: "Transducer into a protection network first, since the same element may be pu
 {
 id: "embedded",
 track: "Electronics",
+sub: "Digital and interfacing",
 title: "Embedded survival kit: interrupts, DMA, buses, RTOS",
 mins: 30,
 body: `
@@ -803,6 +816,7 @@ a: "An interrupt per sample at 1 MHz means an ISR every microsecond; entry/exit 
 {
 id: "structures",
 track: "CS & Maths",
+sub: "Data structures and algorithms",
 title: "Ring buffers, FSMs and Big-O that matters",
 mins: 30,
 body: `
@@ -866,6 +880,7 @@ a: "A single-producer single-consumer ring buffer: fixed array, head written onl
 {
 id: "leastsq",
 track: "CS & Maths",
+sub: "Numerical methods",
 title: "Least squares, conditioning and optimisation",
 mins: 30,
 body: `

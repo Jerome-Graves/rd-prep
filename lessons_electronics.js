@@ -5,6 +5,7 @@ LESSONS.push(
 {
 id: "el-adc",
 track: "Electronics",
+sub: "Analogue front ends",
 title: "ADC and DAC architectures",
 mins: 30,
 body: `
@@ -79,6 +80,7 @@ a: "90 dB needs roughly 15 effective bits, so I would start from a good SAR, not
 {
 id: "el-noise",
 track: "Electronics",
+sub: "Analogue front ends",
 title: "Noise, grounding and shielding",
 mins: 30,
 body: `
@@ -152,6 +154,7 @@ a: "First I characterise, not guess: is it 50 Hz (magnetic or ground loop) or 10
 {
 id: "el-power",
 track: "Electronics",
+sub: "Power and drive",
 title: "Power supplies and decoupling",
 mins: 28,
 body: `
@@ -224,6 +227,7 @@ a: "First I measure properly: tip-and-ring probing on the analogue rail, AC coup
 {
 id: "el-sensors",
 track: "Electronics",
+sub: "Analogue front ends",
 title: "Interfacing real sensors",
 mins: 30,
 body: `
@@ -295,6 +299,7 @@ a: "Full bridge excited at 5 V, four active gauges for maximum output and therma
 {
 id: "el-buses",
 track: "Electronics",
+sub: "Digital and interfacing",
 title: "UART, I2C, SPI and CAN in practice",
 mins: 30,
 body: `
@@ -373,6 +378,7 @@ a: "The longer run added bus capacitance, and I2C rising edges are made by the p
 {
 id: "el-debug",
 track: "Electronics",
+sub: "Board level",
 title: "Bring-up and debugging discipline",
 mins: 28,
 body: `

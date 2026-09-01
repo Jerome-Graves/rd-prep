@@ -6,6 +6,7 @@ LESSONS.push(
 {
 id: "dsp-zdomain",
 track: "DSP",
+sub: "Filters",
 title: "Poles, zeros and the z-domain by intuition",
 mins: 25,
 body: `
@@ -78,6 +79,7 @@ a: "I read it as a map of resonances and notches. The unit circle is the frequen
 {
 id: "dsp-fir-design",
 track: "DSP",
+sub: "Filters",
 title: "Designing FIR filters that meet spec",
 mins: 30,
 body: `
@@ -148,6 +150,7 @@ a: "First I would question where the sharpness is being bought. If the filter ru
 {
 id: "dsp-iir-design",
 track: "DSP",
+sub: "Filters",
 title: "Designing IIR filters and biquad cascades",
 mins: 30,
 body: `
@@ -221,6 +224,7 @@ a: "I would design an elliptic or Chebyshev band-pass analytically: pick the pro
 {
 id: "dsp-fixed",
 track: "DSP",
+sub: "Multirate and fixed point",
 title: "Fixed-point DSP and quantisation effects",
 mins: 30,
 body: `
@@ -292,6 +296,7 @@ a: "First a scaling budget: compute each section's worst-case gain, assign forma
 {
 id: "dsp-adaptive",
 track: "DSP",
+sub: "Detection and estimation",
 title: "Adaptive filters: LMS and friends",
 mins: 30,
 body: `
@@ -369,6 +374,7 @@ a: "I would use an adaptive canceller. If I can get a reference for the interfer
 {
 id: "dsp-detection",
 track: "DSP",
+sub: "Detection and estimation",
 title: "Detection: thresholds, ROC and CFAR",
 mins: 30,
 body: `
@@ -442,6 +448,7 @@ a: "That is the fingerprint of a fixed threshold in nonstationary noise. Near th
 {
 id: "dsp-phase",
 track: "DSP",
+sub: "Detection and estimation",
 title: "Phase, group delay and analytic signals",
 mins: 30,
 body: `
@@ -522,6 +529,7 @@ a: "Coarse first, fine second. I would envelope-detect via the analytic signal a
 {
 id: "dsp-realtime",
 track: "DSP",
+sub: "Systems",
 title: "Real-time DSP architecture",
 mins: 30,
 body: `

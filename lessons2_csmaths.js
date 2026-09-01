@@ -6,6 +6,7 @@ LESSONS.push(
 {
 id: "cm-sorting",
 track: "CS & Maths",
+sub: "Data structures and algorithms",
 title: "Sorting and searching in practice",
 mins: 25,
 body: `
@@ -81,6 +82,7 @@ a: "I would ask what the queries look like. Exact-match lookups by identical tim
 {
 id: "cm-graphs",
 track: "CS & Maths",
+sub: "Data structures and algorithms",
 title: "Graphs and trees where engineers meet them",
 mins: 30,
 body: `
@@ -158,6 +160,7 @@ a: "I would stop hand-ordering the init list and make the dependencies explicit:
 {
 id: "cm-numerics",
 track: "CS & Maths",
+sub: "Numerical methods",
 title: "ODE solvers and simulation maths",
 mins: 30,
 body: `
@@ -229,6 +232,7 @@ a: "That is the classic signature of a non-symplectic integrator on a nearly con
 {
 id: "cm-interp",
 track: "CS & Maths",
+sub: "Numerical methods",
 title: "Interpolation and resampling maths",
 mins: 25,
 body: `
@@ -302,6 +306,7 @@ a: "Upsampling works but is brute force: a 100 times finer estimate costs 100 ti
 {
 id: "cm-fourier",
 track: "CS & Maths",
+sub: "Numerical methods",
 title: "Fourier maths beyond the FFT button",
 mins: 30,
 body: `
@@ -380,6 +385,7 @@ a: "Those two requests pull in opposite directions because time and frequency ar
 {
 id: "cm-opt2",
 track: "CS & Maths",
+sub: "Numerical methods",
 title: "Constrained optimisation and regularisation",
 mins: 30,
 body: `
@@ -457,6 +463,7 @@ a: "Instability under small data changes is ill-conditioning, so I would add a r
 {
 id: "cm-bayes",
 track: "CS & Maths",
+sub: "Statistics and learning",
 title: "Bayesian thinking for engineers",
 mins: 30,
 body: `
@@ -531,6 +538,7 @@ a: "I would show the arithmetic first: at a fault rate of one in ten thousand wi
 {
 id: "cm-ml",
 track: "CS & Maths",
+sub: "Statistics and learning",
 title: "Classical ML foundations",
 mins: 30,
 body: `

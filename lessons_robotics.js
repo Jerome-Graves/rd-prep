@@ -7,6 +7,7 @@ LESSONS.push(
 {
 id: "rob-ros",
 track: "Robotics",
+sub: "Systems",
 title: "ROS and ROS 2: the mental model",
 mins: 30,
 body: `
@@ -86,6 +87,7 @@ a: "I reach for ROS when the system has enough moving parts that tooling and iso
 {
 id: "rob-kinematics",
 track: "Robotics",
+sub: "Motion and mechanics",
 title: "Kinematics, transforms and rotations",
 mins: 30,
 body: `
@@ -163,6 +165,7 @@ a: "Because Euler angles are a chart with a hole in it. They are three numbers c
 {
 id: "rob-locomotion",
 track: "Robotics",
+sub: "Motion and mechanics",
 title: "Wheeled locomotion maths",
 mins: 25,
 body: `
@@ -236,6 +239,7 @@ a: "For that robot, yes, but I would not claim it always is. Holonomy collapsed 
 {
 id: "rob-perception",
 track: "Robotics",
+sub: "Perception and estimation",
 title: "Cameras, lidar and calibration",
 mins: 30,
 body: `
@@ -323,6 +327,7 @@ a: "First suspect is rolling shutter. A row-by-row exposure during fast yaw shea
 {
 id: "rob-slam",
 track: "Robotics",
+sub: "Perception and estimation",
 title: "Localisation, mapping and navigation",
 mins: 30,
 body: `
@@ -407,6 +412,7 @@ a: "They answer different questions on different timescales. The global planner 
 {
 id: "rob-actuators",
 track: "Robotics",
+sub: "Motion and mechanics",
 title: "Motors, drivers and encoders",
 mins: 30,
 body: `
@@ -493,6 +499,7 @@ a: "I would choose a BLDC with a low gear ratio, single-stage planetary around 6
 {
 id: "rob-estimation",
 track: "Robotics",
+sub: "Perception and estimation",
 title: "State estimation on real robots",
 mins: 30,
 body: `
@@ -579,6 +586,7 @@ a: "My holonomic robot ran a 3-DOF EKF, x, y and yaw, fusing four sensors whose 
 {
 id: "rob-sim",
 track: "Robotics",
+sub: "Planning and learning",
 title: "Simulation and sim-to-real",
 mins: 30,
 body: `

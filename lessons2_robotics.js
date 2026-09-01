@@ -6,6 +6,7 @@ LESSONS.push(
 {
 id: "rob-manip",
 track: "Robotics",
+sub: "Motion and mechanics",
 title: "Manipulators and grasping basics",
 mins: 28,
 body: `
@@ -77,6 +78,7 @@ a: "That is the signature of passing near a wrist singularity: two wrist axes ar
 {
 id: "rob-dynamics",
 track: "Robotics",
+sub: "Motion and mechanics",
 title: "Dynamics and motor sizing",
 mins: 28,
 body: `
@@ -148,6 +150,7 @@ a: "I would start from the gait, not the catalogue: a trot with the worst-case s
 {
 id: "rob-planning",
 track: "Robotics",
+sub: "Planning and learning",
 title: "Motion planning deeper",
 mins: 30,
 body: `
@@ -222,6 +225,7 @@ a: "By rate and by knowledge. The planner owns anything requiring the global map
 {
 id: "rob-vo",
 track: "Robotics",
+sub: "Perception and estimation",
 title: "Visual odometry and depth",
 mins: 30,
 body: `
@@ -296,6 +300,7 @@ a: "The corridor is close to the worst case: blank walls give few features, repe
 {
 id: "rob-comms",
 track: "Robotics",
+sub: "Systems",
 title: "Robot communications",
 mins: 27,
 body: `
@@ -366,6 +371,7 @@ a: "Three tiers by deadline. Motor current and velocity loops live inside the dr
 {
 id: "rob-safety",
 track: "Robotics",
+sub: "Systems",
 title: "Safety and reliability engineering",
 mins: 30,
 body: `
@@ -444,6 +450,7 @@ a: "Layers, starting with hardware. The robot goes on a stand so the legs move f
 {
 id: "rob-rl",
 track: "Robotics",
+sub: "Planning and learning",
 title: "Reinforcement learning for robots, honestly",
 mins: 30,
 body: `
@@ -520,6 +527,7 @@ a: "I would resist the urge to retrain and instead difference the two worlds. Fi
 {
 id: "rob-integration",
 track: "Robotics",
+sub: "Systems",
 title: "System integration and field debugging",
 mins: 30,
 body: `

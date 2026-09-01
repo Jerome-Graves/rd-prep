@@ -6,6 +6,7 @@ LESSONS.push(
 {
 id: "cpp-classes",
 track: "C++",
+sub: "The language",
 title: "Classes, virtual functions and the rule of five",
 mins: 28,
 body: `
@@ -83,6 +84,7 @@ a: "I use virtual dispatch when I genuinely need to choose behaviour at runtime 
 {
 id: "cpp-templates",
 track: "C++",
+sub: "The language",
 title: "Templates and generic code without fear",
 mins: 27,
 body: `
@@ -166,6 +168,7 @@ a: "I would separate writing templates from using them. Most of us use templates
 {
 id: "cpp-memory",
 track: "C++",
+sub: "Library and memory",
 title: "Memory, lifetime and undefined behaviour",
 mins: 30,
 body: `
@@ -246,6 +249,7 @@ a: "A heisenbug like that says memory corruption or a race, because the printf c
 {
 id: "cpp-embedded",
 track: "C++",
+sub: "Engineering practice",
 title: "C++ on microcontrollers",
 mins: 28,
 body: `

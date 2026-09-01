@@ -7,6 +7,7 @@ LESSONS.push(
 {
 id: "rtl-verilog",
 track: "RTL & Verilog",
+sub: "The language",
 title: "Verilog for the VHDL engineer",
 mins: 25,
 body: `
@@ -91,6 +92,7 @@ a: "Faster than a new graduate who already writes Verilog, because the hard part
 {
 id: "rtl-nba",
 track: "RTL & Verilog",
+sub: "The language",
 title: "Blocking vs non-blocking, properly",
 mins: 30,
 body: `
@@ -172,6 +174,7 @@ a: "I would start from what a flip-flop does physically: on the clock edge, ever
 {
 id: "rtl-fsm",
 track: "RTL & Verilog",
+sub: "Design",
 title: "RTL design patterns: FSMs, pipelines and resets",
 mins: 30,
 body: `
@@ -248,6 +251,7 @@ a: "First I read the timing report to find the actual failing path, because FSMs
 {
 id: "rtl-cdc",
 track: "RTL & Verilog",
+sub: "Design",
 title: "Clock domains, metastability and CDC",
 mins: 30,
 body: `
@@ -328,6 +332,7 @@ a: "Rare, unsimulatable and multi-domain says CDC to me immediately, so I would 
 {
 id: "rtl-synth",
 track: "RTL & Verilog",
+sub: "Design",
 title: "What synthesis actually does",
 mins: 25,
 body: `
@@ -403,6 +408,7 @@ a: "I would diff the synthesis reports before and after, not just the totals: pe
 {
 id: "rtl-verif",
 track: "RTL & Verilog",
+sub: "Verification and flow",
 title: "Verification: testbenches to assertions",
 mins: 30,
 body: `
@@ -480,6 +486,7 @@ a: "For motion-control FPGA blocks I built SystemVerilog testbenches co-simulati
 {
 id: "rtl-sv",
 track: "RTL & Verilog",
+sub: "The language",
 title: "SystemVerilog upgrades worth using",
 mins: 25,
 body: `
@@ -559,6 +566,7 @@ a: "Two changes with immediate payoff and near-zero risk: declare signals as log
 {
 id: "rtl-fpga",
 track: "RTL & Verilog",
+sub: "Interfaces and systems",
 title: "FPGA architecture and timing closure",
 mins: 30,
 body: `
