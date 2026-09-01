@@ -1011,9 +1011,9 @@
                 + '<a class="top' + (activeTop === "results" ? " active" : "") + '" href="#results">My results</a>';
             tracks.forEach(t => {
                 const inTrack = LESSONS.filter(l => l.track === t);
-                const hasActive = inTrack.some(l => l.id === activeId);
-                // a track is open if the user opened it, or it holds the lesson being read
-                const open = hasActive || state.navOpen[t] === true;
+                // a track is open only while the user has it open: picking a lesson from the
+                // list collapses it again, so the sidebar does not stay a wall of titles
+                const open = state.navOpen[t] === true;
                 const doneN = inTrack.filter(l => state.done[l.id]).length;
                 h += '<button class="track' + (open ? " open" : "") + '" data-track="' + esc(t) + '">'
                     + '<span class="caret">&#9656;</span>'
@@ -1047,6 +1047,15 @@
                     saveState(state);
                     b.classList.toggle("open", nowOpen);
                     b.nextElementSibling.classList.toggle("open", nowOpen);
+                });
+            });
+            nav.querySelectorAll("a.lesson").forEach(a => {
+                a.addEventListener("click", function () {
+                    // collapse the track this lesson came from, before the route change
+                    // re-renders the nav; other open tracks are left alone
+                    const btn = a.closest(".tgroup").previousElementSibling;
+                    if (btn) state.navOpen[btn.getAttribute("data-track")] = false;
+                    saveState(state);
                 });
             });
             document.getElementById("streak").innerHTML = "streak: <b>" + streakCount() + "</b> day" + (streakCount() === 1 ? "" : "s");
